@@ -167,15 +167,12 @@ def normalize_id(identifier):
     return identifier
 
 
-def append_build_configuration(lines, identifier, name, settings):
-    lines.append(f"\t{identifier} /* {name} */ = {{")
-    lines.append("\t\tisa = XCBuildConfiguration;")
-    lines.append("\t\tbuildSettings = {")
-    for key, value in settings:
-        lines.append(f"\t\t\t{key} = {value};")
-    lines.append("\t\t};")
-    lines.append(f"\t\tname = {name};")
-    lines.append("\t};")
+def add(lines, text="", indent=0):
+    if text:
+        lines.append("\t" * indent + text)
+    else:
+        lines.append("")
+
 
 file_refs = {
     "B1FAABA271344FB88FE4C5787F826043": ("JourneyTHApp.swift", "sourcecode.swift", "JourneyTHApp.swift", "<group>", None),
@@ -278,53 +275,67 @@ main_group_id = normalize_id("C82283E8BE864528A747D2F7A83317C0")
 product_ref_group_id = normalize_id("462D4819A0CB4833AE150112EF7A29AB")
 
 lines = []
-lines.append("// !$*UTF8*$!")
-lines.append("{")
-lines.append("\tarchiveVersion = 1;")
-lines.append("\tclasses = {\n\t};")
-lines.append("\tobjectVersion = 56;")
-lines.append("\tobjects = {")
+add(lines, "// !$*UTF8*$!")
+add(lines, "{")
+add(lines, "archiveVersion = 1;", 1)
+add(lines, "classes = {", 1)
+add(lines, "};", 1)
+add(lines, "objectVersion = 56;", 1)
+add(lines, "objects = {", 1)
+add(lines)
 
-lines.append("\n/* Begin PBXBuildFile section */")
+add(lines, "/* Begin PBXBuildFile section */")
 for bid, comment, file_ref, file_comment in build_files + test_build_files:
-    lines.append(
-        f"\t{normalize_id(bid)} /* {comment} */ = {{isa = PBXBuildFile; fileRef = {normalize_id(file_ref)} /* {file_comment} */; }};"
+    add(
+        lines,
+        f"{normalize_id(bid)} /* {comment} */ = {{isa = PBXBuildFile; fileRef = {normalize_id(file_ref)} /* {file_comment} */; }};",
+        2,
     )
-lines.append("/* End PBXBuildFile section */")
+add(lines, "/* End PBXBuildFile section */")
+add(lines)
 
-lines.append("\n/* Begin PBXContainerItemProxy section */")
-lines.append(
-    f"\t{container_proxy_id} /* PBXContainerItemProxy */ = {{isa = PBXContainerItemProxy; containerPortal = {project_id} /* Project object */; proxyType = 1; remoteGlobalIDString = {app_target}; remoteInfo = JourneyTH; }};"
-)
-lines.append("/* End PBXContainerItemProxy section */")
+add(lines, "/* Begin PBXContainerItemProxy section */")
+add(lines, f"{container_proxy_id} /* PBXContainerItemProxy */ = {{", 2)
+add(lines, "isa = PBXContainerItemProxy;", 3)
+add(lines, f"containerPortal = {project_id} /* Project object */;", 3)
+add(lines, "proxyType = 1;", 3)
+add(lines, f"remoteGlobalIDString = {app_target};", 3)
+add(lines, "remoteInfo = JourneyTH;", 3)
+add(lines, "};", 2)
+add(lines, "/* End PBXContainerItemProxy section */")
+add(lines)
 
-lines.append("\n/* Begin PBXFileReference section */")
+add(lines, "/* Begin PBXFileReference section */")
 for fid, (comment, ftype, path, source_tree, name) in file_refs.items():
     normalized_fid = normalize_id(fid)
     attrs = ["isa = PBXFileReference", f"lastKnownFileType = {ftype}"]
     if name is not None:
         attrs.append(f"name = {name}")
     attrs.append(f"path = {path}")
-    attrs.append(f"sourceTree = {source_tree}")
-    lines.append(f"\t{normalized_fid} /* {comment} */ = {{{'; '.join(attrs)}; }};")
-lines.append("/* End PBXFileReference section */")
+    tree_value = f'"{source_tree}"' if source_tree == "<group>" else source_tree
+    attrs.append(f"sourceTree = {tree_value}")
+    add(lines, f"{normalized_fid} /* {comment} */ = {{{'; '.join(attrs)}; }};", 2)
+add(lines, "/* End PBXFileReference section */")
+add(lines)
 
-lines.append("\n/* Begin PBXFrameworksBuildPhase section */")
+add(lines, "/* Begin PBXFrameworksBuildPhase section */")
 for phase in (app_frameworks_phase, test_frameworks_phase):
-    lines.append(f"\t{phase} /* Frameworks */ = {{")
-    lines.append("\t\tisa = PBXFrameworksBuildPhase;")
-    lines.append("\t\tbuildActionMask = 2147483647;")
-    lines.append("\t\tfiles = (")
-    lines.append("\t\t);")
-    lines.append("\t\trunOnlyForDeploymentPostprocessing = 0;")
-    lines.append("\t};")
-lines.append("/* End PBXFrameworksBuildPhase section */")
+    add(lines, f"{phase} /* Frameworks */ = {{", 2)
+    add(lines, "isa = PBXFrameworksBuildPhase;", 3)
+    add(lines, "buildActionMask = 2147483647;", 3)
+    add(lines, "files = (", 3)
+    add(lines, ");", 3)
+    add(lines, "runOnlyForDeploymentPostprocessing = 0;", 3)
+    add(lines, "};", 2)
+add(lines, "/* End PBXFrameworksBuildPhase section */")
+add(lines)
 
-lines.append("\n/* Begin PBXGroup section */")
+add(lines, "/* Begin PBXGroup section */")
 for gid, (name, path, children) in groups.items():
     normalized_gid = normalize_id(gid)
-    group_lines = ["\t" + normalized_gid + " = {isa = PBXGroup;"]
-    group_lines.append("\t\tchildren = (")
+    add(lines, f"{normalized_gid} = {{", 2)
+    add(lines, "isa = PBXGroup;", 3)
+    add(lines, "children = (", 3)
     for child in children:
         if child in file_refs:
             comment = file_refs[child][0]
@@ -334,126 +345,223 @@ for gid, (name, path, children) in groups.items():
             comment = groups[child][0]
         if not comment:
             comment = child
-        group_lines.append(f"\t\t\t{normalize_id(child)} /* {comment} */,")
-    group_lines.append("\t\t);")
+        add(lines, f"{normalize_id(child)} /* {comment} */,", 4)
+    add(lines, ");", 3)
     if name:
-        group_lines.append(f"\t\tname = {name};")
+        add(lines, f"name = {name};", 3)
     if path:
-        group_lines.append(f"\t\tpath = {path};")
-    group_lines.append("\t\tsourceTree = <group>;")
-    group_lines.append("\t};")
-    lines.extend(group_lines)
-lines.append("/* End PBXGroup section */")
+        add(lines, f"path = {path};", 3)
+    add(lines, 'sourceTree = "<group>";', 3)
+    add(lines, "};", 2)
+add(lines, "/* End PBXGroup section */")
+add(lines)
 
-lines.append("\n/* Begin PBXNativeTarget section */")
-lines.append(
-    f"\t{app_target} /* JourneyTH */ = {{isa = PBXNativeTarget; buildConfigurationList = {app_build_config_list} "
-    f"/* Build configuration list for PBXNativeTarget \"JourneyTH\" */; buildPhases = (\n\t\t{app_frameworks_phase} /* Frameworks */," 
-    f"\n\t\t{app_sources_phase} /* Sources */,\n\t\t{app_resources_phase} /* Resources */\n\t); buildRules = (\n\t); dependencies = (\n\t); name = JourneyTH; productName = JourneyTH; productReference = {app_product} /* JourneyTH.app */; productType = \"com.apple.product-type.application\"; }};"
-)
-lines.append(
-    f"\t{test_target} /* JourneyTHTests */ = {{isa = PBXNativeTarget; buildConfigurationList = {test_build_config_list} "
-    f"/* Build configuration list for PBXNativeTarget \"JourneyTHTests\" */; buildPhases = (\n\t\t{test_frameworks_phase} /* Frameworks */," 
-    f"\n\t\t{test_sources_phase} /* Sources */,\n\t\t{test_resources_phase} /* Resources */\n\t); buildRules = (\n\t); dependencies = (\n\t{target_dependency_id} /* PBXTargetDependency */\n\t); name = JourneyTHTests; productName = JourneyTHTests; productReference = {test_product} /* JourneyTHTests.xctest */; productType = \"com.apple.product-type.bundle.unit-test\"; }};"
-)
-lines.append("/* End PBXNativeTarget section */")
+add(lines, "/* Begin PBXNativeTarget section */")
+add(lines, f"{app_target} /* JourneyTH */ = {{", 2)
+add(lines, "isa = PBXNativeTarget;", 3)
+add(lines, f"buildConfigurationList = {app_build_config_list} /* Build configuration list for PBXNativeTarget \"JourneyTH\" */;", 3)
+add(lines, "buildPhases = (", 3)
+add(lines, f"{app_frameworks_phase} /* Frameworks */,", 4)
+add(lines, f"{app_sources_phase} /* Sources */,", 4)
+add(lines, f"{app_resources_phase} /* Resources */,", 4)
+add(lines, ");", 3)
+add(lines, "buildRules = (", 3)
+add(lines, ");", 3)
+add(lines, "dependencies = (", 3)
+add(lines, ");", 3)
+add(lines, "name = JourneyTH;", 3)
+add(lines, "productName = JourneyTH;", 3)
+add(lines, f"productReference = {app_product} /* JourneyTH.app */;", 3)
+add(lines, 'productType = "com.apple.product-type.application";', 3)
+add(lines, "};", 2)
+add(lines, f"{test_target} /* JourneyTHTests */ = {{", 2)
+add(lines, "isa = PBXNativeTarget;", 3)
+add(lines, f"buildConfigurationList = {test_build_config_list} /* Build configuration list for PBXNativeTarget \"JourneyTHTests\" */;", 3)
+add(lines, "buildPhases = (", 3)
+add(lines, f"{test_frameworks_phase} /* Frameworks */,", 4)
+add(lines, f"{test_sources_phase} /* Sources */,", 4)
+add(lines, f"{test_resources_phase} /* Resources */,", 4)
+add(lines, ");", 3)
+add(lines, "buildRules = (", 3)
+add(lines, ");", 3)
+add(lines, "dependencies = (", 3)
+add(lines, f"{target_dependency_id} /* PBXTargetDependency */,", 4)
+add(lines, ");", 3)
+add(lines, "name = JourneyTHTests;", 3)
+add(lines, "productName = JourneyTHTests;", 3)
+add(lines, f"productReference = {test_product} /* JourneyTHTests.xctest */;", 3)
+add(lines, 'productType = "com.apple.product-type.bundle.unit-test";', 3)
+add(lines, "};", 2)
+add(lines, "/* End PBXNativeTarget section */")
+add(lines)
 
-lines.append("\n/* Begin PBXProject section */")
-lines.append(
-    f"\t{project_id} /* Project object */ = {{isa = PBXProject; attributes = {{BuildIndependentTargetsInParallel = YES; LastSwiftUpdateCheck = 1500; LastUpgradeCheck = 1500; "
-    f"TargetAttributes = {{{app_target} = {{CreatedOnToolsVersion = 15.0;}}; {test_target} = {{CreatedOnToolsVersion = 15.0; TestTargetID = {app_target};}};}};}}; "
-    f"buildConfigurationList = {project_build_config_list} /* Build configuration list for PBXProject \"JourneyTH\" */; compatibilityVersion = \"Xcode 15.0\"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (\n\ten,\n\tBase,\n\tth\n\t); "
-    f"mainGroup = {main_group_id}; productRefGroup = {product_ref_group_id}; projectDirPath = \"\"; projectRoot = \"\"; targets = (\n\t{app_target} /* JourneyTH */,\n\t{test_target} /* JourneyTHTests */\n\t); }};"
-)
-lines.append("/* End PBXProject section */")
+add(lines, "/* Begin PBXProject section */")
+add(lines, f"{project_id} /* Project object */ = {{", 2)
+add(lines, "isa = PBXProject;", 3)
+add(lines, "attributes = {", 3)
+add(lines, "BuildIndependentTargetsInParallel = YES;", 4)
+add(lines, "LastSwiftUpdateCheck = 1500;", 4)
+add(lines, "LastUpgradeCheck = 1500;", 4)
+add(lines, "TargetAttributes = {", 4)
+add(lines, f"{app_target} = {{CreatedOnToolsVersion = 15.0;}};", 5)
+add(lines, f"{test_target} = {{CreatedOnToolsVersion = 15.0; TestTargetID = {app_target};}};", 5)
+add(lines, "};", 4)
+add(lines, "};", 3)
+add(lines, f"buildConfigurationList = {project_build_config_list} /* Build configuration list for PBXProject \"JourneyTH\" */;", 3)
+add(lines, 'compatibilityVersion = "Xcode 15.0";', 3)
+add(lines, "developmentRegion = en;", 3)
+add(lines, "hasScannedForEncodings = 0;", 3)
+add(lines, "knownRegions = (", 3)
+add(lines, "en,", 4)
+add(lines, "Base,", 4)
+add(lines, "th,", 4)
+add(lines, ");", 3)
+add(lines, f"mainGroup = {main_group_id};", 3)
+add(lines, f"productRefGroup = {product_ref_group_id};", 3)
+add(lines, 'projectDirPath = "";', 3)
+add(lines, 'projectRoot = "";', 3)
+add(lines, "targets = (", 3)
+add(lines, f"{app_target} /* JourneyTH */,", 4)
+add(lines, f"{test_target} /* JourneyTHTests */,", 4)
+add(lines, ");", 3)
+add(lines, "};", 2)
+add(lines, "/* End PBXProject section */")
+add(lines)
 
-lines.append("\n/* Begin PBXResourcesBuildPhase section */")
-lines.append(f"\t{app_resources_phase} /* Resources */ = {{")
-lines.append("\t\tisa = PBXResourcesBuildPhase;")
-lines.append("\t\tbuildActionMask = 2147483647;")
-lines.append("\t\tfiles = (")
+add(lines, "/* Begin PBXResourcesBuildPhase section */")
+add(lines, f"{app_resources_phase} /* Resources */ = {{", 2)
+add(lines, "isa = PBXResourcesBuildPhase;", 3)
+add(lines, "buildActionMask = 2147483647;", 3)
+add(lines, "files = (", 3)
 for fid in resource_build_files:
     comment, _, _ = build_file_map[fid]
-    lines.append(f"\t\t\t{normalize_id(fid)} /* {comment} */,")
-lines.append("\t\t);")
-lines.append("\t\trunOnlyForDeploymentPostprocessing = 0;")
-lines.append("\t};")
-lines.append(f"\t{test_resources_phase} /* Resources */ = {{")
-lines.append("\t\tisa = PBXResourcesBuildPhase;")
-lines.append("\t\tbuildActionMask = 2147483647;")
-lines.append("\t\tfiles = (")
-lines.append("\t\t);")
-lines.append("\t\trunOnlyForDeploymentPostprocessing = 0;")
-lines.append("\t};")
-lines.append("/* End PBXResourcesBuildPhase section */")
+    add(lines, f"{normalize_id(fid)} /* {comment} */,", 4)
+add(lines, ");", 3)
+add(lines, "runOnlyForDeploymentPostprocessing = 0;", 3)
+add(lines, "};", 2)
+add(lines, f"{test_resources_phase} /* Resources */ = {{", 2)
+add(lines, "isa = PBXResourcesBuildPhase;", 3)
+add(lines, "buildActionMask = 2147483647;", 3)
+add(lines, "files = (", 3)
+add(lines, ");", 3)
+add(lines, "runOnlyForDeploymentPostprocessing = 0;", 3)
+add(lines, "};", 2)
+add(lines, "/* End PBXResourcesBuildPhase section */")
+add(lines)
 
-lines.append("\n/* Begin PBXSourcesBuildPhase section */")
-lines.append(f"\t{app_sources_phase} /* Sources */ = {{")
-lines.append("\t\tisa = PBXSourcesBuildPhase;")
-lines.append("\t\tbuildActionMask = 2147483647;")
-lines.append("\t\tfiles = (")
+add(lines, "/* Begin PBXSourcesBuildPhase section */")
+add(lines, f"{app_sources_phase} /* Sources */ = {{", 2)
+add(lines, "isa = PBXSourcesBuildPhase;", 3)
+add(lines, "buildActionMask = 2147483647;", 3)
+add(lines, "files = (", 3)
 for fid in app_sources:
     comment, _, _ = build_file_map[fid]
-    lines.append(f"\t\t\t{normalize_id(fid)} /* {comment} */,")
-lines.append("\t\t);")
-lines.append("\t\trunOnlyForDeploymentPostprocessing = 0;")
-lines.append("\t};")
-lines.append(f"\t{test_sources_phase} /* Sources */ = {{")
-lines.append("\t\tisa = PBXSourcesBuildPhase;")
-lines.append("\t\tbuildActionMask = 2147483647;")
-lines.append("\t\tfiles = (")
+    add(lines, f"{normalize_id(fid)} /* {comment} */,", 4)
+add(lines, ");", 3)
+add(lines, "runOnlyForDeploymentPostprocessing = 0;", 3)
+add(lines, "};", 2)
+add(lines, f"{test_sources_phase} /* Sources */ = {{", 2)
+add(lines, "isa = PBXSourcesBuildPhase;", 3)
+add(lines, "buildActionMask = 2147483647;", 3)
+add(lines, "files = (", 3)
 for fid, _, _, _ in test_build_files:
     comment, _, _ = build_file_map[fid]
-    lines.append(f"\t\t\t{normalize_id(fid)} /* {comment} */,")
-lines.append("\t\t);")
-lines.append("\t\trunOnlyForDeploymentPostprocessing = 0;")
-lines.append("\t};")
-lines.append("/* End PBXSourcesBuildPhase section */")
+    add(lines, f"{normalize_id(fid)} /* {comment} */,", 4)
+add(lines, ");", 3)
+add(lines, "runOnlyForDeploymentPostprocessing = 0;", 3)
+add(lines, "};", 2)
+add(lines, "/* End PBXSourcesBuildPhase section */")
+add(lines)
 
-lines.append("\n/* Begin PBXTargetDependency section */")
-lines.append(
-    f"\t{target_dependency_id} /* PBXTargetDependency */ = {{isa = PBXTargetDependency; target = {app_target} /* JourneyTH */; targetProxy = {container_proxy_id} /* PBXContainerItemProxy */; }};"
-)
-lines.append("/* End PBXTargetDependency section */")
+add(lines, "/* Begin PBXTargetDependency section */")
+add(lines, f"{target_dependency_id} /* PBXTargetDependency */ = {{", 2)
+add(lines, f"isa = PBXTargetDependency;", 3)
+add(lines, f"target = {app_target} /* JourneyTH */;", 3)
+add(lines, f"targetProxy = {container_proxy_id} /* PBXContainerItemProxy */;", 3)
+add(lines, "};", 2)
+add(lines, "/* End PBXTargetDependency section */")
+add(lines)
 
-lines.append("\n/* Begin PBXVariantGroup section */")
-lines.append(f"\t{normalize_id(variant_group_id)} /* {variant_name} */ = {{")
-lines.append("\t\tisa = PBXVariantGroup;")
-lines.append("\t\tchildren = (")
+add(lines, "/* Begin PBXVariantGroup section */")
+add(lines, f"{normalize_id(variant_group_id)} /* {variant_name} */ = {{", 2)
+add(lines, "isa = PBXVariantGroup;", 3)
+add(lines, "children = (", 3)
 for child in variant_children:
     child_comment = file_refs[child][0]
-    lines.append(f"\t\t\t{normalize_id(child)} /* {child_comment} */,")
-lines.append("\t\t);")
-lines.append(f"\t\tname = {variant_name};")
-lines.append("\t\tsourceTree = <group>;")
-lines.append("\t};")
-lines.append("/* End PBXVariantGroup section */")
+    add(lines, f"{normalize_id(child)} /* {child_comment} */,", 4)
+add(lines, ");", 3)
+add(lines, f"name = {variant_name};", 3)
+add(lines, 'sourceTree = "<group>";', 3)
+add(lines, "};", 2)
+add(lines, "/* End PBXVariantGroup section */")
+add(lines)
 
-# Build configurations
-lines.append("\n/* Begin XCBuildConfiguration section */")
-append_build_configuration(lines, project_debug_config, "Debug", project_debug_settings)
-append_build_configuration(lines, project_release_config, "Release", project_release_settings)
-append_build_configuration(lines, app_debug_config, "Debug", app_debug_settings)
-append_build_configuration(lines, app_release_config, "Release", app_release_settings)
-append_build_configuration(lines, test_debug_config, "Debug", test_debug_settings)
-append_build_configuration(lines, test_release_config, "Release", test_release_settings)
-lines.append("/* End XCBuildConfiguration section */")
+add(lines, "/* Begin XCBuildConfiguration section */")
+for identifier, name, settings in [
+    (project_debug_config, "Debug", project_debug_settings),
+    (project_release_config, "Release", project_release_settings),
+    (app_debug_config, "Debug", app_debug_settings),
+    (app_release_config, "Release", app_release_settings),
+    (test_debug_config, "Debug", test_debug_settings),
+    (test_release_config, "Release", test_release_settings),
+]:
+    add(lines, f"{identifier} /* {name} */ = {{", 2)
+    add(lines, "isa = XCBuildConfiguration;", 3)
+    add(lines, "buildSettings = {", 3)
+    for key, value in settings:
+        add(lines, f"{key} = {value};", 4)
+    add(lines, "};", 3)
+    add(lines, f"name = {name};", 3)
+    add(lines, "};", 2)
+add(lines, "/* End XCBuildConfiguration section */")
+add(lines)
 
-lines.append("\n/* Begin XCConfigurationList section */")
-lines.append(
-    f"\t{project_build_config_list} /* Build configuration list for PBXProject \"JourneyTH\" */ = {{isa = XCConfigurationList; buildConfigurations = ({project_debug_config} /* Debug */, {project_release_config} /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; }};"
+add(lines, "/* Begin XCConfigurationList section */")
+add(
+    lines,
+    f"{project_build_config_list} /* Build configuration list for PBXProject \"JourneyTH\" */ = {{",
+    2,
 )
-lines.append(
-    f"\t{app_build_config_list} /* Build configuration list for PBXNativeTarget \"JourneyTH\" */ = {{isa = XCConfigurationList; buildConfigurations = ({app_debug_config} /* Debug */, {app_release_config} /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; }};"
+add(lines, "isa = XCConfigurationList;", 3)
+add(lines, "buildConfigurations = (", 3)
+add(lines, f"{project_debug_config} /* Debug */,", 4)
+add(lines, f"{project_release_config} /* Release */,", 4)
+add(lines, ");", 3)
+add(lines, "defaultConfigurationIsVisible = 0;", 3)
+add(lines, "defaultConfigurationName = Release;", 3)
+add(lines, "};", 2)
+add(
+    lines,
+    f"{app_build_config_list} /* Build configuration list for PBXNativeTarget \"JourneyTH\" */ = {{",
+    2,
 )
-lines.append(
-    f"\t{test_build_config_list} /* Build configuration list for PBXNativeTarget \"JourneyTHTests\" */ = {{isa = XCConfigurationList; buildConfigurations = ({test_debug_config} /* Debug */, {test_release_config} /* Release */); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; }};"
+add(lines, "isa = XCConfigurationList;", 3)
+add(lines, "buildConfigurations = (", 3)
+add(lines, f"{app_debug_config} /* Debug */,", 4)
+add(lines, f"{app_release_config} /* Release */,", 4)
+add(lines, ");", 3)
+add(lines, "defaultConfigurationIsVisible = 0;", 3)
+add(lines, "defaultConfigurationName = Release;", 3)
+add(lines, "};", 2)
+add(
+    lines,
+    f"{test_build_config_list} /* Build configuration list for PBXNativeTarget \"JourneyTHTests\" */ = {{",
+    2,
 )
-lines.append("/* End XCConfigurationList section */")
+add(lines, "isa = XCConfigurationList;", 3)
+add(lines, "buildConfigurations = (", 3)
+add(lines, f"{test_debug_config} /* Debug */,", 4)
+add(lines, f"{test_release_config} /* Release */,", 4)
+add(lines, ");", 3)
+add(lines, "defaultConfigurationIsVisible = 0;", 3)
+add(lines, "defaultConfigurationName = Release;", 3)
+add(lines, "};", 2)
+add(lines, "/* End XCConfigurationList section */")
+add(lines)
 
-lines.append("\t};")
-lines.append(f"\trootObject = {project_id} /* Project object */;")
-lines.append("}")
+add(lines, "};", 1)
+add(lines, f"rootObject = {project_id} /* Project object */;", 1)
+add(lines, "}")
 
 with open("JourneyTH.xcodeproj/project.pbxproj", "w") as f:
     f.write("\n".join(lines) + "\n")
