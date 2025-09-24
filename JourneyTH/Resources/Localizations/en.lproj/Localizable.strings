@@ -1,0 +1,58 @@
+"transport.title" = "Find Routes";
+"transport.search.empty" = "Search for Bangkok routes and get travel tips.";
+"transport.search.button" = "Search";
+"transport.origin.placeholder" = "Origin";
+"transport.destination.placeholder" = "Destination";
+"transport.duration" = "Duration";
+"transport.steps.title" = "Steps";
+"transport.travel.date" = "Departure time";
+"transport.view.map" = "View Map";
+
+"discover.title" = "Discover";
+"discover.toggle.title" = "Display";
+"discover.toggle.list" = "List";
+"discover.toggle.map" = "Map";
+"discover.filter.reset" = "All";
+"discover.empty.title" = "No results";
+"discover.empty.subtitle" = "Try adjusting filters to see more experiences.";
+"discover.rating.label" = "Rating";
+"discover.map.accessibility" = "Point of interest map";
+
+"add.to.itinerary" = "Add to Itinerary";
+
+"itinerary.title" = "My Itinerary";
+"itinerary.empty.title" = "Plan your trip";
+"itinerary.empty.subtitle" = "Add highlights from Discover to craft your journey.";
+"itinerary.cta.discover" = "Browse Discover";
+"itinerary.total.minutes" = "Total minutes";
+"itinerary.share" = "Share";
+"itinerary.remove.accessibility" = "Remove from itinerary";
+
+"esim.title" = "eSIM & Payments";
+"esim.empty.subtitle" = "Choose a plan to get started.";
+"esim.plan.price" = "Price";
+"esim.plan.validity" = "Validity";
+"esim.plan.speed" = "Speed";
+"esim.plan.purchase" = "Purchase Plan";
+"esim.order.status" = "Order Status";
+"esim.qr.instructions" = "Scan the QR code to install your eSIM.";
+"esim.order.created" = "Created";
+"esim.order.mark.activated" = "Mark as Activated";
+"esim.order.pending" = "Pending";
+"esim.order.paid" = "Activated";
+"esim.order.failed" = "Failed";
+
+"account.title" = "Account";
+"account.profile.section" = "Profile";
+"account.local.profile" = "Offline profile";
+"account.language.toggle" = "Use Thai language";
+"account.settings.section" = "Settings";
+"account.clear.data" = "Clear local data";
+"account.version" = "Version";
+"account.cleared" = "Data cleared";
+
+"shared.try.again" = "Try Again";
+"shared.loading" = "Loading";
+"shared.minutes.unit" = "mins";
+"shared.days" = "days";
+"shared.close" = "Close";

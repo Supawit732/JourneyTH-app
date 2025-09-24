@@ -1,0 +1,134 @@
+[
+  {
+    "id": "poi_wat_arun",
+    "name": "Wat Arun",
+    "area": "Bangkok",
+    "rating": 4.8,
+    "tags": ["Temple", "River"],
+    "minutes": 90,
+    "latitude": 13.7437,
+    "longitude": 100.4880,
+    "images": ["wat_arun"]
+  },
+  {
+    "id": "poi_chatuchak",
+    "name": "Chatuchak Market",
+    "area": "Bangkok",
+    "rating": 4.6,
+    "tags": ["Market", "Food"],
+    "minutes": 180,
+    "latitude": 13.7994,
+    "longitude": 100.5507,
+    "images": ["chatuchak"]
+  },
+  {
+    "id": "poi_chinatown",
+    "name": "Yaowarat Chinatown",
+    "area": "Bangkok",
+    "rating": 4.7,
+    "tags": ["Food", "Night"],
+    "minutes": 120,
+    "latitude": 13.7394,
+    "longitude": 100.5107,
+    "images": ["chinatown"]
+  },
+  {
+    "id": "poi_bua_tong",
+    "name": "Bua Tong Sticky Waterfall",
+    "area": "Chiang Mai",
+    "rating": 4.9,
+    "tags": ["Nature"],
+    "minutes": 150,
+    "latitude": 19.0675,
+    "longitude": 99.1915,
+    "images": ["bua_tong"]
+  },
+  {
+    "id": "poi_doi_suthep",
+    "name": "Doi Suthep",
+    "area": "Chiang Mai",
+    "rating": 4.8,
+    "tags": ["Temple", "Nature"],
+    "minutes": 160,
+    "latitude": 18.8045,
+    "longitude": 98.9215,
+    "images": ["doi_suthep"]
+  },
+  {
+    "id": "poi_nimmanhaemin",
+    "name": "Nimmanhaemin Road",
+    "area": "Chiang Mai",
+    "rating": 4.4,
+    "tags": ["Food", "Night"],
+    "minutes": 90,
+    "latitude": 18.8021,
+    "longitude": 98.9677,
+    "images": ["nimman"]
+  },
+  {
+    "id": "poi_patong",
+    "name": "Patong Beach",
+    "area": "Phuket",
+    "rating": 4.3,
+    "tags": ["Night", "Beach"],
+    "minutes": 180,
+    "latitude": 7.8966,
+    "longitude": 98.2956,
+    "images": ["patong"]
+  },
+  {
+    "id": "poi_phi_phi",
+    "name": "Phi Phi Islands",
+    "area": "Phuket",
+    "rating": 4.9,
+    "tags": ["Nature", "Snorkel"],
+    "minutes": 480,
+    "latitude": 7.7407,
+    "longitude": 98.7784,
+    "images": ["phi_phi"]
+  },
+  {
+    "id": "poi_old_phuket",
+    "name": "Old Phuket Town",
+    "area": "Phuket",
+    "rating": 4.5,
+    "tags": ["Food", "Market"],
+    "minutes": 150,
+    "latitude": 7.8840,
+    "longitude": 98.3852,
+    "images": ["old_phuket"]
+  },
+  {
+    "id": "poi_asia_tique",
+    "name": "Asiatique The Riverfront",
+    "area": "Bangkok",
+    "rating": 4.4,
+    "tags": ["Night", "Market"],
+    "minutes": 150,
+    "latitude": 13.7042,
+    "longitude": 100.5105,
+    "images": ["asiatique"]
+  },
+  {
+    "id": "poi_mae_kampong",
+    "name": "Mae Kampong Village",
+    "area": "Chiang Mai",
+    "rating": 4.7,
+    "tags": ["Nature", "Culture"],
+    "minutes": 240,
+    "latitude": 18.8666,
+    "longitude": 99.3687,
+    "images": ["mae_kampong"]
+  },
+  {
+    "id": "poi_karon",
+    "name": "Karon Viewpoint",
+    "area": "Phuket",
+    "rating": 4.6,
+    "tags": ["Nature", "View"],
+    "minutes": 90,
+    "latitude": 7.8058,
+    "longitude": 98.3090,
+    "images": ["karon"]
+  }
+]
