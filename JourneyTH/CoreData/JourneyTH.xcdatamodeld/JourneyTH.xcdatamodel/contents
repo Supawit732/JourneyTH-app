@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21754" systemVersion="22G90" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="NO" userDefinedModelVersionIdentifier="">
+    <entity name="Itinerary" representedClassName="Itinerary" syncable="YES">
+        <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="title" optional="YES" attributeType="String" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="ItineraryItem" representedClassName="ItineraryItem" syncable="YES">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="itineraryId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="order" optional="YES" attributeType="Integer 16" defaultValueString="0"/>
+        <attribute name="poiId" optional="YES" attributeType="String" usesScalarValueType="NO"/>
+    </entity>
+    <entity name="Order" representedClassName="Order" syncable="YES">
+        <attribute name="amountTHB" optional="YES" attributeType="Integer 32" defaultValueString="0"/>
+        <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="planId" optional="YES" attributeType="String" usesScalarValueType="NO"/>
+        <attribute name="provider" optional="YES" attributeType="String" usesScalarValueType="NO"/>
+        <attribute name="status" optional="YES" attributeType="String" usesScalarValueType="NO"/>
+        <attribute name="type" optional="YES" attributeType="String" usesScalarValueType="NO"/>
+    </entity>
+    <elements>
+        <element name="Itinerary" positionX="-63" positionY="-24" width="128" height="90"/>
+        <element name="ItineraryItem" positionX="113" positionY="0" width="128" height="105"/>
+        <element name="Order" positionX="-36" positionY="117" width="128" height="120"/>
+    </elements>
+</model>
