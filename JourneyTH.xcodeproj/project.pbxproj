@@ -401,7 +401,11 @@
 			ONLY_ACTIVE_ARCH = YES;
 			SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 			SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+codex/create-ios-app-journeyth-with-swiftui-mvvm-jvmpwp
+			SWIFT_VERSION = 5.9;
+
 			SWIFT_VERSION = 5.0;
+ main
 		};
 		name = Debug;
 	};
@@ -421,7 +425,11 @@
 			MTL_ENABLE_DEBUG_INFO = NO;
 			SWIFT_COMPILATION_MODE = wholemodule;
 			SWIFT_OPTIMIZATION_LEVEL = "-O";
+ codex/create-ios-app-journeyth-with-swiftui-mvvm-jvmpwp
+			SWIFT_VERSION = 5.9;
+
 			SWIFT_VERSION = 5.0;
+  main
 			VALIDATE_PRODUCT = YES;
 		};
 		name = Release;
@@ -440,7 +448,11 @@
 			PRODUCT_BUNDLE_IDENTIFIER = com.example.JourneyTH;
 			PRODUCT_NAME = "$(TARGET_NAME)";
 			SWIFT_EMIT_LOC_STRINGS = YES;
+ codex/create-ios-app-journeyth-with-swiftui-mvvm-jvmpwp
+			SWIFT_VERSION = 5.9;
+
 			SWIFT_VERSION = 5.0;
+ main
 			TARGETED_DEVICE_FAMILY = 1;
 		};
 		name = Debug;
@@ -460,7 +472,11 @@
 			PRODUCT_NAME = "$(TARGET_NAME)";
 			SWIFT_EMIT_LOC_STRINGS = YES;
 			SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+ codex/create-ios-app-journeyth-with-swiftui-mvvm-jvmpwp
+			SWIFT_VERSION = 5.9;
+
 			SWIFT_VERSION = 5.0;
+ main
 			TARGETED_DEVICE_FAMILY = 1;
 		};
 		name = Release;
@@ -473,7 +489,11 @@
 			IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 			PRODUCT_BUNDLE_IDENTIFIER = com.example.JourneyTHTests;
 			PRODUCT_NAME = "$(TARGET_NAME)";
+ codex/create-ios-app-journeyth-with-swiftui-mvvm-jvmpwp
+			SWIFT_VERSION = 5.9;
+
 			SWIFT_VERSION = 5.0;
+ main
 			TARGETED_DEVICE_FAMILY = 1;
 		};
 		name = Debug;
@@ -486,7 +506,11 @@
 			IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 			PRODUCT_BUNDLE_IDENTIFIER = com.example.JourneyTHTests;
 			PRODUCT_NAME = "$(TARGET_NAME)";
+codex/create-ios-app-journeyth-with-swiftui-mvvm-jvmpwp
+			SWIFT_VERSION = 5.9;
+
 			SWIFT_VERSION = 5.0;
+ main
 			TARGETED_DEVICE_FAMILY = 1;
 		};
 		name = Release;
@@ -500,4 +524,8 @@
 /* End XCConfigurationList section */
 	};
 	rootObject = 37088684A8C14E49AF159A3CB05ADBDB /* Project object */;
+ codex/create-ios-app-journeyth-with-swiftui-mvvm-jvmpwp
 }
+
+}
+ main
