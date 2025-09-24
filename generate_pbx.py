@@ -92,7 +92,11 @@ project_debug_settings = [
     ("ONLY_ACTIVE_ARCH", "YES"),
     ("SWIFT_ACTIVE_COMPILATION_CONDITIONS", "DEBUG"),
     ("SWIFT_OPTIMIZATION_LEVEL", "\"-Onone\""),
+codex/create-ios-app-journeyth-with-swiftui-mvvm-jvmpwp
     ("SWIFT_VERSION", "5.9"),
+  
+    ("SWIFT_VERSION", "5.0"),
+main
 ]
 
 project_release_settings = [
@@ -109,7 +113,11 @@ project_release_settings = [
     ("MTL_ENABLE_DEBUG_INFO", "NO"),
     ("SWIFT_COMPILATION_MODE", "wholemodule"),
     ("SWIFT_OPTIMIZATION_LEVEL", "\"-O\""),
+   codex/create-ios-app-journeyth-with-swiftui-mvvm-jvmpwp
     ("SWIFT_VERSION", "5.9"),
+
+    ("SWIFT_VERSION", "5.0"),
+    main
     ("VALIDATE_PRODUCT", "YES"),
 ]
 
@@ -125,7 +133,11 @@ app_debug_settings = [
     ("PRODUCT_BUNDLE_IDENTIFIER", "com.example.JourneyTH"),
     ("PRODUCT_NAME", "\"$(TARGET_NAME)\""),
     ("SWIFT_EMIT_LOC_STRINGS", "YES"),
+codex/create-ios-app-journeyth-with-swiftui-mvvm-jvmpwp
     ("SWIFT_VERSION", "5.9"),
+
+    ("SWIFT_VERSION", "5.0"),
+ main
     ("TARGETED_DEVICE_FAMILY", "1"),
 ]
 
@@ -142,7 +154,11 @@ app_release_settings = [
     ("PRODUCT_NAME", "\"$(TARGET_NAME)\""),
     ("SWIFT_EMIT_LOC_STRINGS", "YES"),
     ("SWIFT_OPTIMIZATION_LEVEL", "\"-Owholemodule\""),
+ codex/create-ios-app-journeyth-with-swiftui-mvvm-jvmpwp
     ("SWIFT_VERSION", "5.9"),
+
+    ("SWIFT_VERSION", "5.0"),
+ main
     ("TARGETED_DEVICE_FAMILY", "1"),
 ]
 
@@ -152,7 +168,11 @@ test_debug_settings = [
     ("IPHONEOS_DEPLOYMENT_TARGET", "17.0"),
     ("PRODUCT_BUNDLE_IDENTIFIER", "com.example.JourneyTHTests"),
     ("PRODUCT_NAME", "\"$(TARGET_NAME)\""),
+ codex/create-ios-app-journeyth-with-swiftui-mvvm-jvmpwp
     ("SWIFT_VERSION", "5.9"),
+
+    ("SWIFT_VERSION", "5.0"),
+ main
     ("TARGETED_DEVICE_FAMILY", "1"),
 ]
 
@@ -390,4 +410,8 @@ lines.append(f"\trootObject = {project_id} /* Project object */;")
 lines.append("}")
 
 with open("JourneyTH.xcodeproj/project.pbxproj", "w") as f:
+ codex/create-ios-app-journeyth-with-swiftui-mvvm-jvmpwp
     f.write("\n".join(lines) + "\n")
+=======
+    f.write("\n".join(lines))
+ main

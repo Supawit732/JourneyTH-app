@@ -46,7 +46,10 @@ JourneyTH-app/
 Use `python generate_pbx.py` to regenerate `JourneyTH.xcodeproj/project.pbxproj` after adding/removing files.
 
 ## Building & Running
+ codex/create-ios-app-journeyth-with-swiftui-mvvm-jvmpwp
 1. Open `JourneyTH.xcodeproj` in **Xcode 15 or newer** (project format 56 / compatibility Xcode 15.0). If Xcode reports a parse error, make sure you have upgraded to Xcode 15 and re-run `python generate_pbx.py` to restore the project file from source control.
+
+main
 2. Select the **JourneyTH** scheme and an iPhone 15 Pro (iOS 17+) simulator or device.
 3. Build & Run. No external APIs are required; all data loads from bundled mocks.
 
