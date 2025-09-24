@@ -1,0 +1,58 @@
+"transport.title" = "ค้นหาเส้นทาง";
+"transport.search.empty" = "ลองค้นหาเส้นทางในกรุงเทพฯ และดูคำแนะนำการเดินทาง";
+"transport.search.button" = "ค้นหา";
+"transport.origin.placeholder" = "ต้นทาง";
+"transport.destination.placeholder" = "ปลายทาง";
+"transport.duration" = "ระยะเวลา";
+"transport.steps.title" = "ขั้นตอนการเดินทาง";
+"transport.travel.date" = "เวลาออกเดินทาง";
+"transport.view.map" = "ดูแผนที่";
+
+"discover.title" = "สำรวจสถานที่";
+"discover.toggle.title" = "มุมมอง";
+"discover.toggle.list" = "รายการ";
+"discover.toggle.map" = "แผนที่";
+"discover.filter.reset" = "ทั้งหมด";
+"discover.empty.title" = "ไม่พบข้อมูล";
+"discover.empty.subtitle" = "ปรับตัวกรองเพื่อดูประสบการณ์เพิ่มเติม";
+"discover.rating.label" = "เรตติ้ง";
+"discover.map.accessibility" = "แผนที่สถานที่ท่องเที่ยว";
+
+"add.to.itinerary" = "เพิ่มในทริป";
+
+"itinerary.title" = "ทริปของฉัน";
+"itinerary.empty.title" = "เริ่มวางแผนทริป";
+"itinerary.empty.subtitle" = "เพิ่มไฮไลต์จากหน้าสำรวจเพื่อสร้างทริปของคุณ";
+"itinerary.cta.discover" = "ไปที่สำรวจสถานที่";
+"itinerary.total.minutes" = "เวลารวม";
+"itinerary.share" = "แชร์";
+"itinerary.remove.accessibility" = "ลบออกจากทริป";
+
+"esim.title" = "eSIM & ชำระเงิน";
+"esim.empty.subtitle" = "เลือกแพ็กเกจเพื่อเริ่มต้น";
+"esim.plan.price" = "ราคา";
+"esim.plan.validity" = "ระยะเวลา";
+"esim.plan.speed" = "ความเร็ว";
+"esim.plan.purchase" = "ซื้อแพ็กเกจ";
+"esim.order.status" = "สถานะคำสั่งซื้อ";
+"esim.qr.instructions" = "สแกน QR เพื่อดาวน์โหลด eSIM";
+"esim.order.created" = "สร้างเมื่อ";
+"esim.order.mark.activated" = "บันทึกว่าเปิดใช้งานแล้ว";
+"esim.order.pending" = "รอดำเนินการ";
+"esim.order.paid" = "เปิดใช้งาน";
+"esim.order.failed" = "ล้มเหลว";
+
+"account.title" = "บัญชี";
+"account.profile.section" = "โปรไฟล์";
+"account.local.profile" = "โปรไฟล์ในเครื่อง";
+"account.language.toggle" = "ใช้ภาษาไทย";
+"account.settings.section" = "การตั้งค่า";
+"account.clear.data" = "ลบข้อมูลในเครื่อง";
+"account.version" = "เวอร์ชัน";
+"account.cleared" = "ล้างข้อมูลแล้ว";
+
+"shared.try.again" = "ลองใหม่";
+"shared.loading" = "กำลังโหลด";
+"shared.minutes.unit" = "นาที";
+"shared.days" = "วัน";
+"shared.close" = "ปิด";
