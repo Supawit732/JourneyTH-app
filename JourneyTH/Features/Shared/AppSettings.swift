@@ -76,24 +76,25 @@ final class ServiceContainer: ObservableObject {
     static let shared = ServiceContainer()
 
     let persistence: PersistenceController
-    let transportService: TransportServiceProtocol
     let poiService: PoiServiceProtocol
-    let orderService: OrderServicing
     let itineraryRepository: ItineraryRepository
-    let planLoader: PlanLoading
-    let paymentProvider: PaymentProviding
+    let fareService: FareEstimatorServicing
+    let railDataService: RailDataProviding
+    let railFareService: RailFareServicing
 
     private init() {
         let persistence = PersistenceController.shared
         self.persistence = persistence
 
         let dataLoader = LocalDataLoader()
-        self.transportService = MockTransportService(loader: dataLoader)
+        let fareService = FareEstimatorService(loader: dataLoader)
+        let railDataService = RailDataService(loader: dataLoader)
+
+        self.fareService = fareService
+        self.railDataService = railDataService
+        self.railFareService = RailFareService(dataService: railDataService, fareService: fareService)
         self.poiService = MockPoiService(loader: dataLoader)
         self.itineraryRepository = ItineraryRepository(context: persistence.container.viewContext)
-        self.planLoader = LocalPlanLoader(loader: dataLoader)
-        self.paymentProvider = MockPaymentProvider()
-        self.orderService = OrderService(context: persistence.container.viewContext)
     }
 }
 

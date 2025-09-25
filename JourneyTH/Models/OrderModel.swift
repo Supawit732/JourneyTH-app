@@ -1,25 +1,18 @@
 import Foundation
 
-enum OrderStatus: String, CaseIterable, Codable {
-    case pending
-    case paid
-    case failed
-
-    var localizedKey: String {
-        switch self {
-        case .pending: return "esim.order.pending"
-        case .paid: return "esim.order.paid"
-        case .failed: return "esim.order.failed"
+struct ItineraryShareBuilder {
+    func makeShareText(title: String, pois: [Poi], locale: Locale, minutesLabel: String) -> String {
+        var lines: [String] = []
+        lines.append(title)
+        lines.append(String(repeating: "=", count: max(3, title.count)))
+        for (index, poi) in pois.enumerated() {
+            let name = poi.localizedName(locale: locale)
+            lines.append("\(index + 1). \(name) – \(poi.area)")
+            lines.append("   • \(poi.minutes) \(minutesLabel)")
+            if !poi.tags.isEmpty {
+                lines.append("   • #\(poi.tags.joined(separator: " #"))")
+            }
         }
+        return lines.joined(separator: "\n")
     }
-}
-
-struct OrderModel: Identifiable, Equatable {
-    let id: UUID
-    let type: String
-    let amountTHB: Int
-    var status: OrderStatus
-    let provider: String
-    let createdAt: Date
-    let planId: String
 }

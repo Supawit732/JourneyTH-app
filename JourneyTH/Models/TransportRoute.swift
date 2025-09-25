@@ -1,44 +1,61 @@
 import Foundation
-import MapKit
 
-struct TransportRoute: Identifiable, Codable, Equatable {
-    let id: String
-    let origin: String
-    let destination: String
-    let durationMinutes: Int
-    let priceTHB: Double
-    let steps: [TransportStep]
-    let polyline: [RouteCoordinate]?
-
-    var formattedDuration: String {
-        let hours = durationMinutes / 60
-        let minutes = durationMinutes % 60
-        if hours > 0 {
-            return "\(hours)h \(minutes)m"
-        }
-        return "\(minutes)m"
-    }
-
-    var formattedPrice: String {
-        String(format: "฿%.0f", priceTHB)
-    }
-
-    var coordinates: [CLLocationCoordinate2D] {
-        (polyline ?? []).map { $0.location }
-    }
+struct FareConfigurationBundle: Codable {
+    let fareConfig: FareConfig
+    let railConfig: RailConfig
 }
 
-struct TransportStep: Identifiable, Codable, Equatable {
-    var id: String { name + mode }
-    let mode: String
-    let name: String
+struct FareConfig: Codable {
+    let taxi: [TaxiTier]
+    let tuktuk: TukTukConfig
+    let moto: MotoConfig
 }
 
-struct RouteCoordinate: Codable, Equatable {
-    let latitude: Double
-    let longitude: Double
+struct TaxiTier: Codable {
+    let upToKm: Double?
+    let rate: Double
+}
 
-    var location: CLLocationCoordinate2D {
-        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-    }
+struct TukTukConfig: Codable {
+    let baseMin: Double
+    let baseMax: Double
+    let perKmMin: Double
+    let perKmMax: Double
+}
+
+struct MotoConfig: Codable {
+    let base2km: Double
+    let perKm_2_5: Double
+    let perKm_gt5: Double
+    let surcharges: [FareSurcharge]
+}
+
+struct FareSurcharge: Codable {
+    let reason: String
+    let amount: Double
+}
+
+struct FareEstimates: Equatable {
+    let taxi: Double
+    let tukTukMin: Double
+    let tukTukMax: Double
+    let moto: Double
+    let motoNotes: [FareSurcharge]
+}
+
+struct RailConfig: Codable {
+    let urbanRail: [String: UrbanRailPricing]
+    let intercityRail: IntercityRailPricing
+}
+
+struct UrbanRailPricing: Codable {
+    let base: Double
+    let perStop: [Double]
+    let max: Double
+}
+
+struct IntercityRailPricing: Codable {
+    let basePerKm: [String: Double]
+    let classSurcharge: [String: Double]
+    let nightSurcharge: Double
 }

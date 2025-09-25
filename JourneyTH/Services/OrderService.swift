@@ -1,100 +1,90 @@
 import Foundation
-import CoreData
 
-protocol OrderServicing {
-    @MainActor
-    func createOrder(for plan: EsimPlan, provider: PaymentProviding) async throws -> OrderModel
-    @MainActor
-    func markOrder(_ id: UUID, as status: OrderStatus) throws -> OrderModel
-    @MainActor
-    func fetchOrders() throws -> [OrderModel]
-    @MainActor
-    func latestOrder(for plan: EsimPlan) throws -> OrderModel?
-    @MainActor
-    func clearOrders() throws
+struct RailFareEstimate: Equatable {
+    let system: String
+    let distanceKm: Double
+    let stops: Int
+    let price: Double
+    let isUrban: Bool
 }
 
-protocol PaymentProviding {
-    func initiatePayment(amount: Int) async -> OrderStatus
-    func markPaid(order: OrderModel) async -> OrderStatus
+protocol RailFareServicing {
+    func estimate(from: RailStation, to: RailStation) async throws -> RailFareEstimate
+    func lines() async throws -> [RailLine]
+    func stations() async throws -> [RailStation]
 }
 
-struct MockPaymentProvider: PaymentProviding {
-    func initiatePayment(amount: Int) async -> OrderStatus {
-        await Task.sleep(UInt64(0.2 * 1_000_000_000))
-        return .pending
+struct RailFareService: RailFareServicing {
+    private let dataService: RailDataProviding
+    private let fareService: FareEstimatorServicing
+
+    init(dataService: RailDataProviding, fareService: FareEstimatorServicing) {
+        self.dataService = dataService
+        self.fareService = fareService
     }
 
-    func markPaid(order: OrderModel) async -> OrderStatus {
-        await Task.sleep(UInt64(0.1 * 1_000_000_000))
-        return .paid
-    }
-}
-
-@MainActor
-final class OrderService: OrderServicing {
-    private let context: NSManagedObjectContext
-
-    init(context: NSManagedObjectContext) {
-        self.context = context
+    func stations() async throws -> [RailStation] {
+        try await dataService.stations()
     }
 
-    func createOrder(for plan: EsimPlan, provider: PaymentProviding) async throws -> OrderModel {
-        let status = await provider.initiatePayment(amount: plan.priceTHB)
-        let order = Order(context: context)
-        order.id = UUID()
-        order.amountTHB = Int32(plan.priceTHB)
-        order.type = "esim"
-        order.status = status.rawValue
-        order.provider = "MockPay"
-        order.createdAt = Date()
-        order.planId = plan.id
-        try context.save()
-        return try makeModel(from: order)
+    func lines() async throws -> [RailLine] {
+        try await dataService.lines()
     }
 
-    func markOrder(_ id: UUID, as status: OrderStatus) throws -> OrderModel {
-        let fetchRequest: NSFetchRequest<Order> = Order.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-        guard let order = try context.fetch(fetchRequest).first else {
-            throw NSError(domain: "OrderService", code: 1)
+    func estimate(from: RailStation, to: RailStation) async throws -> RailFareEstimate {
+        let distance = distanceBetween(from, to)
+        let railConfig = try await fareService.railConfiguration()
+        if from.system == to.system, from.system != "SRT" {
+            let stops = try await stopCount(from: from, to: to)
+            let price = urbanPrice(for: from.system, stops: stops, config: railConfig.urbanRail)
+            return RailFareEstimate(system: from.system, distanceKm: distance, stops: stops, price: price, isUrban: true)
+        } else {
+            let price = intercityPrice(distance: distance, config: railConfig.intercityRail)
+            return RailFareEstimate(system: "SRT", distanceKm: distance, stops: 0, price: price, isUrban: false)
         }
-        order.status = status.rawValue
-        try context.save()
-        return try makeModel(from: order)
     }
 
-    func fetchOrders() throws -> [OrderModel] {
-        let request: NSFetchRequest<Order> = Order.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
-        return try context.fetch(request).map { try makeModel(from: $0) }
+    private func distanceBetween(_ origin: RailStation, _ destination: RailStation) -> Double {
+        let earthRadius = 6371.0
+        let dLat = (destination.lat - origin.lat) * Double.pi / 180
+        let dLon = (destination.lng - origin.lng) * Double.pi / 180
+        let a = pow(sin(dLat / 2), 2) + cos(origin.lat * Double.pi / 180) * cos(destination.lat * Double.pi / 180) * pow(sin(dLon / 2), 2)
+        let c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return earthRadius * c
     }
 
-    func latestOrder(for plan: EsimPlan) throws -> OrderModel? {
-        let request: NSFetchRequest<Order> = Order.fetchRequest()
-        request.predicate = NSPredicate(format: "planId == %@", plan.id)
-        request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
-        request.fetchLimit = 1
-        return try context.fetch(request).first.flatMap { try? makeModel(from: $0) }
-    }
-
-    func clearOrders() throws {
-        let request: NSFetchRequest<NSFetchRequestResult> = Order.fetchRequest()
-        let batch = NSBatchDeleteRequest(fetchRequest: request)
-        try context.execute(batch)
-        try context.save()
-    }
-
-    private func makeModel(from managedObject: Order) throws -> OrderModel {
-        guard let id = managedObject.id,
-              let type = managedObject.type,
-              let statusRaw = managedObject.status,
-              let status = OrderStatus(rawValue: statusRaw),
-              let provider = managedObject.provider,
-              let createdAt = managedObject.createdAt,
-              let planId = managedObject.planId else {
-            throw NSError(domain: "OrderService", code: 2)
+    private func stopCount(from: RailStation, to: RailStation) async throws -> Int {
+        let lines = try await dataService.lines()
+        for line in lines where line.system == from.system {
+            if let startIndex = line.stationIds.firstIndex(of: from.id),
+               let endIndex = line.stationIds.firstIndex(of: to.id) {
+                return abs(endIndex - startIndex)
+            }
         }
-        return OrderModel(id: id, type: type, amountTHB: Int(managedObject.amountTHB), status: status, provider: provider, createdAt: createdAt, planId: planId)
+        return 0
+    }
+
+    private func urbanPrice(for system: String, stops: Int, config: [String: UrbanRailPricing]) -> Double {
+        guard let pricing = config[system] else { return 0 }
+        var total = pricing.base
+        if stops <= 0 {
+            return min(total, pricing.max)
+        }
+        for i in 0..<stops {
+            let increment = i < pricing.perStop.count ? pricing.perStop[i] : pricing.perStop.last ?? 0
+            total += increment
+            if total >= pricing.max { return pricing.max }
+        }
+        return min(total, pricing.max)
+    }
+
+    private func intercityPrice(distance: Double, config: IntercityRailPricing) -> Double {
+        let baseRate = config.basePerKm["express"] ?? config.basePerKm.values.first ?? 0
+        var price = distance * baseRate
+        price += config.classSurcharge["second"] ?? 0
+        if distance > 150 {
+            price += config.nightSurcharge
+        }
+        return max(price, 20)
     }
 }
