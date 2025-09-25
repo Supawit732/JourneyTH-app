@@ -1,47 +1,84 @@
 import Foundation
 
-protocol TransportServiceProtocol {
-    func fetchRoutes() async throws -> [TransportRoute]
-    func searchRoutes(from origin: String, to destination: String) async throws -> [TransportRoute]
+protocol FareEstimatorServicing {
+    func fareConfiguration() async throws -> FareConfig
+    func railConfiguration() async throws -> RailConfig
+    func estimateFares(for distanceKm: Double) async throws -> FareEstimates
 }
 
-actor TransportRouteStore {
-    private var cachedRoutes: [TransportRoute]?
-
-    func cached() -> [TransportRoute]? { cachedRoutes }
-    func set(_ routes: [TransportRoute]) { cachedRoutes = routes }
+actor FareConfigurationStore {
+    var bundle: FareConfigurationBundle?
 }
 
-struct MockTransportService: TransportServiceProtocol {
+struct FareEstimatorService: FareEstimatorServicing {
     private let loader: DataLoading
-    private let store = TransportRouteStore()
+    private let store = FareConfigurationStore()
 
     init(loader: DataLoading) {
         self.loader = loader
     }
 
-    func fetchRoutes() async throws -> [TransportRoute] {
-        if let cached = await store.cached() {
-            return cached
-        }
-        let routes: [TransportRoute] = try loader.load("transport", as: [TransportRoute].self)
-        await store.set(routes)
-        return routes
+    func fareConfiguration() async throws -> FareConfig {
+        try await ensureBundle().fareConfig
     }
 
-    func searchRoutes(from origin: String, to destination: String) async throws -> [TransportRoute] {
-        let routes = try await fetchRoutes()
-        let trimmedOrigin = origin.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let trimmedDestination = destination.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    func railConfiguration() async throws -> RailConfig {
+        try await ensureBundle().railConfig
+    }
 
-        guard !trimmedOrigin.isEmpty || !trimmedDestination.isEmpty else {
-            return routes
+    func estimateFares(for distanceKm: Double) async throws -> FareEstimates {
+        let config = try await fareConfiguration()
+        let distance = max(distanceKm, 0)
+        let taxiFare = calculateTaxiFare(distance: distance, tiers: config.taxi)
+        let tukTukMin = config.tuktuk.baseMin + distance * config.tuktuk.perKmMin
+        let tukTukMax = config.tuktuk.baseMax + distance * config.tuktuk.perKmMax
+        let motoFare = calculateMotoFare(distance: distance, config: config.moto)
+        return FareEstimates(
+            taxi: taxiFare,
+            tukTukMin: tukTukMin,
+            tukTukMax: tukTukMax,
+            moto: motoFare,
+            motoNotes: config.moto.surcharges
+        )
+    }
+
+    private func ensureBundle() async throws -> FareConfigurationBundle {
+        if let bundle = await store.bundle {
+            return bundle
         }
+        let bundle: FareConfigurationBundle = try loader.load("fares_config", as: FareConfigurationBundle.self)
+        await store.bundle = bundle
+        return bundle
+    }
 
-        return routes.filter { route in
-            let originMatch = trimmedOrigin.isEmpty || route.origin.lowercased().contains(trimmedOrigin)
-            let destinationMatch = trimmedDestination.isEmpty || route.destination.lowercased().contains(trimmedDestination)
-            return originMatch && destinationMatch
+    private func calculateTaxiFare(distance: Double, tiers: [TaxiTier]) -> Double {
+        guard let first = tiers.first else { return 0 }
+        var total = first.rate
+        var previousUpper = first.upToKm ?? 1
+        if distance <= previousUpper { return total }
+
+        for tier in tiers.dropFirst() {
+            let upper = tier.upToKm ?? Double.greatestFiniteMagnitude
+            let segment = max(min(distance, upper) - previousUpper, 0)
+            if segment > 0 {
+                total += segment * tier.rate
+                previousUpper += segment
+            }
+            if distance <= upper { break }
+            previousUpper = upper
+        }
+        return total
+    }
+
+    private func calculateMotoFare(distance: Double, config: MotoConfig) -> Double {
+        if distance <= 0 { return config.base2km }
+        if distance <= 2 {
+            return config.base2km
+        } else if distance <= 5 {
+            return config.base2km + (distance - 2) * config.perKm_2_5
+        } else {
+            let midSegment = 3 * config.perKm_2_5
+            return config.base2km + midSegment + (distance - 5) * config.perKm_gt5
         }
     }
 }

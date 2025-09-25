@@ -1,0 +1,56 @@
+{
+  "fareConfig": {
+    "taxi": [
+      { "upToKm": 1.0, "rate": 35.0 },
+      { "upToKm": 10.0, "rate": 6.5 },
+      { "upToKm": 20.0, "rate": 7.5 },
+      { "upToKm": 40.0, "rate": 8.0 },
+      { "rate": 9.0 }
+    ],
+    "tuktuk": {
+      "baseMin": 60.0,
+      "baseMax": 120.0,
+      "perKmMin": 10.0,
+      "perKmMax": 18.0
+    },
+    "moto": {
+      "base2km": 25.0,
+      "perKm_2_5": 8.0,
+      "perKm_gt5": 10.0,
+      "surcharges": [
+        { "reason": "rain", "amount": 10.0 },
+        { "reason": "night", "amount": 5.0 }
+      ]
+    }
+  },
+  "railConfig": {
+    "urbanRail": {
+      "BTS": {
+        "base": 17.0,
+        "perStop": [3.0, 3.0, 4.0, 4.0, 5.0, 6.0],
+        "max": 62.0
+      },
+      "MRT": {
+        "base": 17.0,
+        "perStop": [2.0, 3.0, 3.0, 4.0, 5.0],
+        "max": 45.0
+      },
+      "ARL": {
+        "base": 15.0,
+        "perStop": [5.0, 5.0, 5.0, 5.0],
+        "max": 45.0
+      }
+    },
+    "intercityRail": {
+      "basePerKm": {
+        "rapid": 1.2,
+        "express": 1.8
+      },
+      "classSurcharge": {
+        "first": 120.0,
+        "second": 40.0
+      },
+      "nightSurcharge": 50.0
+    }
+  }
+}
