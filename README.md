@@ -25,8 +25,9 @@ JourneyTH is a SwiftUI iOS 17+ application that delivers a local-first travel co
 
 ## Building & Running
 1. Open `JourneyTH.xcodeproj` in **Xcode 15** or newer.
-2. Select the **JourneyTH** scheme with an iPhone 15 Pro (iOS 17+) simulator or device.
-3. Build & Run. All content is available offline via bundled resources.
+2. Allow Xcode to resolve Swift Package Manager dependencies (the project pulls in Apple's [swift-collections](https://github.com/apple/swift-collections) package for the `OrderedCollections` module bundled with SwiftUI on iOS 17).
+3. Select the **JourneyTH** scheme with an iPhone 15 Pro (iOS 17+) simulator or device.
+4. Build & Run. All content is available offline via bundled resources
 
 ## Tests
 Execute the unit test suite from Xcode or via command line on macOS:

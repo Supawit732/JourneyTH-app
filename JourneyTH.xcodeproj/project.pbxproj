@@ -35,6 +35,7 @@
 		6408A3AF5B424F7B8302A613 /* PoiViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF06062C05041329C88A5C5 /* PoiViewModelTests.swift */; };
 		3ABCFA3A7D0D4E4EAE286677 /* ItineraryRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F66E467385C24E37AC1397AF /* ItineraryRepositoryTests.swift */; };
 		05833FE86B234D20AAE4651C /* OrderServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52A4D820998E4546898C8695 /* OrderServiceTests.swift */; };
+		5F0D21A3E1F8402AA5F34012 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = B1E1F2C4A28F47FF9CB7AA61 /* OrderedCollections */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -87,6 +88,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5F0D21A3E1F8402AA5F34012 /* OrderedCollections in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -312,6 +314,9 @@
 			);
 			dependencies = (
 			);
+			packageProductDependencies = (
+				B1E1F2C4A28F47FF9CB7AA61 /* OrderedCollections */,
+			);
 			name = JourneyTH;
 			productName = JourneyTH;
 			productReference = EDEFAF81E471449BA01CDB83 /* JourneyTH.app */;
@@ -357,6 +362,9 @@
 				en,
 				Base,
 				th,
+			);
+			packageReferences = (
+				D5A7F3B9E41F4E5F9A2B1C7D /* XCRemoteSwiftPackageReference "swift-collections" */,
 			);
 			mainGroup = C82283E8BE864528A747D2F7;
 			productRefGroup = 462D4819A0CB4833AE150112;
@@ -450,6 +458,25 @@
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B1E1F2C4A28F47FF9CB7AA61 /* OrderedCollections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D5A7F3B9E41F4E5F9A2B1C7D /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = OrderedCollections;
+		};
+/* End XCSwiftPackageProductDependency section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D5A7F3B9E41F4E5F9A2B1C7D /* XCRemoteSwiftPackageReference "swift-collections" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-collections";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCBuildConfiguration section */
 		745C0DB40D0B43FC9FEE81AF /* Debug */ = {
