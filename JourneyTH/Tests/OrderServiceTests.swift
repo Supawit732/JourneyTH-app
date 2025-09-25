@@ -1,36 +1,38 @@
 import XCTest
 @testable import JourneyTH
 
-@MainActor
 final class OrderServiceTests: XCTestCase {
-    private var service: OrderService!
-    private var provider: MockPaymentProvider!
-
-    override func setUp() async throws {
-        let persistence = PersistenceController(inMemory: true)
-        service = OrderService(context: persistence.container.viewContext)
-        provider = MockPaymentProvider()
+    func testUrbanEstimateUsesStops() async throws {
+        let loader = LocalDataLoader()
+        let fareService = FareEstimatorService(loader: loader)
+        let dataService = RailDataService(loader: loader)
+        let railService = RailFareService(dataService: dataService, fareService: fareService)
+        let stations = try await railService.stations()
+        guard let from = stations.first(where: { $0.id == "bts_mo_chit" }),
+              let to = stations.first(where: { $0.id == "bts_asok" }) else {
+            XCTFail("Missing stations")
+            return
+        }
+        let estimate = try await railService.estimate(from: from, to: to)
+        XCTAssertTrue(estimate.isUrban)
+        XCTAssertGreaterThan(estimate.stops, 0)
+        XCTAssertGreaterThan(estimate.price, 0)
     }
 
-    func testCreateOrderIsPending() async throws {
-        let plan = EsimPlan(id: "test", name: "Test", network: "Mock", priceTHB: 100, speed: "Fast", validityDays: 3)
-        let order = try await service.createOrder(for: plan, provider: provider)
-        XCTAssertEqual(order.status, .pending)
-        XCTAssertEqual(order.amountTHB, 100)
-    }
-
-    func testMarkActivatedTransitionsToPaid() async throws {
-        let plan = EsimPlan(id: "test", name: "Test", network: "Mock", priceTHB: 100, speed: "Fast", validityDays: 3)
-        let order = try await service.createOrder(for: plan, provider: provider)
-        let updated = try service.markOrder(order.id, as: .paid)
-        XCTAssertEqual(updated.status, .paid)
-    }
-
-    func testFetchOrdersReturnsLatest() async throws {
-        let plan = EsimPlan(id: "plan1", name: "Plan", network: "Mock", priceTHB: 120, speed: "Fast", validityDays: 5)
-        _ = try await service.createOrder(for: plan, provider: provider)
-        let orders = try service.fetchOrders()
-        XCTAssertEqual(orders.count, 1)
-        XCTAssertEqual(orders.first?.planId, "plan1")
+    func testIntercityEstimateUsesDistance() async throws {
+        let loader = LocalDataLoader()
+        let fareService = FareEstimatorService(loader: loader)
+        let dataService = RailDataService(loader: loader)
+        let railService = RailFareService(dataService: dataService, fareService: fareService)
+        let stations = try await railService.stations()
+        guard let from = stations.first(where: { $0.id == "srt_hua_lamphong" }),
+              let to = stations.first(where: { $0.id == "srt_ayutthaya" }) else {
+            XCTFail("Missing stations")
+            return
+        }
+        let estimate = try await railService.estimate(from: from, to: to)
+        XCTAssertFalse(estimate.isUrban)
+        XCTAssertGreaterThan(estimate.distanceKm, 50)
+        XCTAssertGreaterThan(estimate.price, 0)
     }
 }

@@ -1,8 +1,11 @@
+import json
+from pathlib import Path
+
 build_files = [
-    ("0B401BE29AC547BE97B2BBC9B6627BB6", "transport.json in Resources", "DF962B16DC574B18864520BB6C8F7B71", "transport.json"),
+    ("0B401BE29AC547BE97B2BBC9B6627BB6", "fares_config.json in Resources", "DF962B16DC574B18864520BB6C8F7B71", "fares_config.json"),
     ("0F94DB5B0FFD414B94AD397F66E56566", "SharedComponents.swift in Sources", "C9BE5809471D4ACAA1CA31ABC1A828CF", "SharedComponents.swift"),
     ("1929634F6BC04705965471981ED5791D", "PaymentsFeature.swift in Sources", "5E07DDF5C5684C05B2C6180FD987004E", "PaymentsFeature.swift"),
-    ("1B6300A431CB49C9B9C9AE33DFCDB2AA", "esim_plans.json in Resources", "91072CA6FE4546D1B11A026EA69CFD82", "esim_plans.json"),
+    ("1B6300A431CB49C9B9C9AE33DFCDB2AA", "stations.json in Resources", "91072CA6FE4546D1B11A026EA69CFD82", "stations.json"),
     ("2440393F08554AB9A76B5F8E2510A5BA", "PoiService.swift in Sources", "36EF10CCC0CE4398B9EB7064F895E64A", "PoiService.swift"),
     ("45D007163FE0497FAB2C8BA754485F1C", "DiscoverFeature.swift in Sources", "C726873733654A5AAAF6C20DC82E409C", "DiscoverFeature.swift"),
     ("4B108C3A7DAF479093E851E79F1FA206", "JourneyTHApp.swift in Sources", "B1FAABA271344FB88FE4C5787F826043", "JourneyTHApp.swift"),
@@ -41,6 +44,26 @@ resource_build_files = [
     "A94D8F43BA194F0D94B5602F00D5F01E",
 ]
 
+package_build_files = [
+    ("5F0D21A3E1F8402AA5F34012", "OrderedCollections in Frameworks", "B1E1F2C4A28F47FF9CB7AA61"),
+]
+
+package_product_dependencies = [
+    ("B1E1F2C4A28F47FF9CB7AA61", "OrderedCollections", "D5A7F3B9E41F4E5F9A2B1C7D"),
+]
+
+package_references = [
+    ("D5A7F3B9E41F4E5F9A2B1C7D", "swift-collections", "https://github.com/apple/swift-collections", "1.0.4", "937e904258d22af6e447a0b72c0bc67583ef64a2"),
+]
+
+app_framework_files = [pkg[0] for pkg in package_build_files]
+test_framework_files = []
+
+package_reference_map = {
+    rid: (name, url, min_version, revision)
+    for rid, name, url, min_version, revision in package_references
+}
+
 app_sources = [
     "4B108C3A7DAF479093E851E79F1FA206",
     "0F94DB5B0FFD414B94AD397F66E56566",
@@ -74,6 +97,12 @@ build_file_map = {
     bid: (comment, file_ref, file_comment)
     for bid, comment, file_ref, file_comment in build_files + test_build_files
 }
+package_build_file_map = {
+    bid: (comment, product_ref)
+    for bid, comment, product_ref in package_build_files
+}
+for bid, (comment, _) in package_build_file_map.items():
+    build_file_map[bid] = (comment, None, None)
 
 project_debug_settings = [
     ("ALWAYS_SEARCH_USER_PATHS", "NO"),
@@ -194,9 +223,9 @@ file_refs = {
     "16245B883427418D8E6EB5E715C2608D": ("OrderService.swift", "sourcecode.swift", "OrderService.swift", "<group>", None),
     "9A986428DD23477AAC6355BDD9A2D5C9": ("Persistence.swift", "sourcecode.swift", "Persistence.swift", "<group>", None),
     "FC46CE28CE744A56B56D012F8855A4DA": ("PlanLoader.swift", "sourcecode.swift", "PlanLoader.swift", "<group>", None),
-    "DF962B16DC574B18864520BB6C8F7B71": ("transport.json", "text.json", "transport.json", "<group>", None),
+    "DF962B16DC574B18864520BB6C8F7B71": ("fares_config.json", "text.json", "fares_config.json", "<group>", None),
     "91C05ECBF1644A69BB0977C6EC8BB656": ("pois.json", "text.json", "pois.json", "<group>", None),
-    "91072CA6FE4546D1B11A026EA69CFD82": ("esim_plans.json", "text.json", "esim_plans.json", "<group>", None),
+    "91072CA6FE4546D1B11A026EA69CFD82": ("stations.json", "text.json", "stations.json", "<group>", None),
     "9BDE6A65E50B42DAA7F0FCACE4E92175": ("Assets.xcassets", "folder.assetcatalog", "Assets.xcassets", "<group>", None),
     "6ADEDD1F99744762AAA2BC49BD418770": ("JourneyTH.xcdatamodeld", "wrapper.xcdatamodeld", "JourneyTH.xcdatamodeld", "<group>", None),
     "AD9639B5FA9442EF8C93471C274351F2": ("TransportViewModelTests.swift", "sourcecode.swift", "TransportViewModelTests.swift", "<group>", None),
@@ -291,6 +320,12 @@ for bid, comment, file_ref, file_comment in build_files + test_build_files:
         f"{normalize_id(bid)} /* {comment} */ = {{isa = PBXBuildFile; fileRef = {normalize_id(file_ref)} /* {file_comment} */; }};",
         2,
     )
+for bid, comment, product_ref in package_build_files:
+    add(
+        lines,
+        f"{normalize_id(bid)} /* {comment} */ = {{isa = PBXBuildFile; productRef = {normalize_id(product_ref)} /* {comment.split(' in ')[0]} */; }};",
+        2,
+    )
 add(lines, "/* End PBXBuildFile section */")
 add(lines)
 
@@ -319,11 +354,14 @@ add(lines, "/* End PBXFileReference section */")
 add(lines)
 
 add(lines, "/* Begin PBXFrameworksBuildPhase section */")
-for phase in (app_frameworks_phase, test_frameworks_phase):
+for phase, file_ids in ((app_frameworks_phase, app_framework_files), (test_frameworks_phase, test_framework_files)):
     add(lines, f"{phase} /* Frameworks */ = {{", 2)
     add(lines, "isa = PBXFrameworksBuildPhase;", 3)
     add(lines, "buildActionMask = 2147483647;", 3)
     add(lines, "files = (", 3)
+    for fid in file_ids:
+        comment = build_file_map[fid][0]
+        add(lines, f"{normalize_id(fid)} /* {comment} */,", 4)
     add(lines, ");", 3)
     add(lines, "runOnlyForDeploymentPostprocessing = 0;", 3)
     add(lines, "};", 2)
@@ -369,6 +407,11 @@ add(lines, "buildRules = (", 3)
 add(lines, ");", 3)
 add(lines, "dependencies = (", 3)
 add(lines, ");", 3)
+if package_product_dependencies:
+    add(lines, "packageProductDependencies = (", 3)
+    for pid, name, _ in package_product_dependencies:
+        add(lines, f"{normalize_id(pid)} /* {name} */,", 4)
+    add(lines, ");", 3)
 add(lines, "name = JourneyTH;", 3)
 add(lines, "productName = JourneyTH;", 3)
 add(lines, f"productReference = {app_product} /* JourneyTH.app */;", 3)
@@ -416,6 +459,11 @@ add(lines, "en,", 4)
 add(lines, "Base,", 4)
 add(lines, "th,", 4)
 add(lines, ");", 3)
+if package_references:
+    add(lines, "packageReferences = (", 3)
+    for rid, name, *_ in package_references:
+        add(lines, f"{normalize_id(rid)} /* XCRemoteSwiftPackageReference \"{name}\" */,", 4)
+    add(lines, ");", 3)
 add(lines, f"mainGroup = {main_group_id};", 3)
 add(lines, f"productRefGroup = {product_ref_group_id};", 3)
 add(lines, 'projectDirPath = "";', 3)
@@ -496,6 +544,32 @@ add(lines, "};", 2)
 add(lines, "/* End PBXVariantGroup section */")
 add(lines)
 
+if package_product_dependencies:
+    add(lines, "/* Begin XCSwiftPackageProductDependency section */")
+    for pid, name, package_id in package_product_dependencies:
+        package_name = package_reference_map[package_id][0]
+        add(lines, f"{normalize_id(pid)} /* {name} */ = {{", 2)
+        add(lines, "isa = XCSwiftPackageProductDependency;", 3)
+        add(lines, f"package = {normalize_id(package_id)} /* XCRemoteSwiftPackageReference \"{package_name}\" */;", 3)
+        add(lines, f"productName = {name};", 3)
+        add(lines, "};", 2)
+    add(lines, "/* End XCSwiftPackageProductDependency section */")
+    add(lines)
+
+if package_references:
+    add(lines, "/* Begin XCRemoteSwiftPackageReference section */")
+    for rid, name, url, min_version, _ in package_references:
+        add(lines, f"{normalize_id(rid)} /* XCRemoteSwiftPackageReference \"{name}\" */ = {{", 2)
+        add(lines, "isa = XCRemoteSwiftPackageReference;", 3)
+        add(lines, f"repositoryURL = \"{url}\";", 3)
+        add(lines, "requirement = {", 3)
+        add(lines, "kind = upToNextMajorVersion;", 4)
+        add(lines, f"minimumVersion = {min_version};", 4)
+        add(lines, "};", 3)
+        add(lines, "};", 2)
+    add(lines, "/* End XCRemoteSwiftPackageReference section */")
+    add(lines)
+
 add(lines, "/* Begin XCBuildConfiguration section */")
 for identifier, name, settings in [
     (project_debug_config, "Debug", project_debug_settings),
@@ -565,3 +639,23 @@ add(lines, "}")
 
 with open("JourneyTH.xcodeproj/project.pbxproj", "w") as f:
     f.write("\n".join(lines) + "\n")
+
+if package_references:
+    resolved = {
+        "pins": [
+            {
+                "identity": name,
+                "kind": "remoteSourceControl",
+                "location": url,
+                "state": {
+                    "revision": revision,
+                    "version": min_version,
+                },
+            }
+            for _, name, url, min_version, revision in package_references
+        ],
+        "version": 2,
+    }
+    resolved_path = Path("JourneyTH.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved")
+    resolved_path.parent.mkdir(parents=True, exist_ok=True)
+    resolved_path.write_text(json.dumps(resolved, indent=2) + "\n")

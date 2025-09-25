@@ -11,10 +11,10 @@ final class ItineraryViewModel: ObservableObject {
     @Published private(set) var items: [ItineraryDisplayItem] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
-    @Published var shareText: String = ""
 
     private let repository: ItineraryRepository
     private let poiService: PoiServiceProtocol
+    private let shareBuilder = ItineraryShareBuilder()
     private var cachedPois: [Poi] = []
 
     init(repository: ItineraryRepository, poiService: PoiServiceProtocol) {
@@ -31,8 +31,7 @@ final class ItineraryViewModel: ObservableObject {
             items = stored.compactMap { model in
                 guard let poi = cachedPois.first(where: { $0.id == model.poiId }) else { return nil }
                 return ItineraryDisplayItem(id: model.id, poi: poi, order: model.order)
-            }.sorted(by: { $0.order < $1.order })
-            shareText = makeShareText()
+            }.sorted { $0.order < $1.order }
             isLoading = false
         } catch {
             errorMessage = error.localizedDescription
@@ -58,93 +57,57 @@ final class ItineraryViewModel: ObservableObject {
         }
     }
 
-    func clear() {
-        do {
-            try repository.clearAll()
-            Task { await load() }
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
     func totalMinutes() -> Int {
         items.reduce(0) { $0 + $1.poi.minutes }
     }
 
-    private func makeShareText() -> String {
-        items.sorted(by: { $0.order < $1.order }).enumerated().map { index, item in
-            "Day \(index + 1): \(item.poi.name) - \(item.poi.minutes) minutes"
-        }.joined(separator: "\n")
+    func shareText(using locale: Locale, minutesLabel: String) -> String {
+        shareBuilder.makeShareText(title: "JourneyTH", pois: orderedPois(), locale: locale, minutesLabel: minutesLabel)
+    }
+
+    private func orderedPois() -> [Poi] {
+        items.sorted { $0.order < $1.order }.map { $0.poi }
     }
 }
 
 struct ItineraryView: View {
     @ObservedObject var viewModel: ItineraryViewModel
     @EnvironmentObject private var settings: AppSettings
-    @State private var showShare = false
+    @Environment(\.locale) private var locale
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if viewModel.items.isEmpty {
-                EmptyStateView(
-                    title: settings.localized("itinerary.empty.title"),
-                    subtitle: settings.localized("itinerary.empty.subtitle"),
-                    imageSystemName: "calendar",
-                    actionTitle: settings.localized("itinerary.cta.discover"),
-                    action: nil
+                ContentUnavailableView(
+                    settings.localized("itinerary.empty.title"),
+                    systemImage: "calendar",
+                    description: Text(settings.localized("itinerary.empty.subtitle"))
                 )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List {
-                    ForEach(viewModel.items) { item in
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(item.poi.name)
-                                    .font(.headline)
-                                Text("\(item.poi.minutes) \(settings.localized("shared.minutes.unit"))")
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                Text(item.poi.area)
-                                    .font(.caption)
-                            }
-                            Spacer()
-                            Button(role: .destructive) {
-                                viewModel.remove(item)
-                            } label: {
-                                Image(systemName: "trash")
-                            }
-                            .accessibilityLabel(settings.localized("itinerary.remove.accessibility"))
+                    Section(header: header) {
+                        ForEach(viewModel.items) { item in
+                            ItineraryRow(item: item)
+                                .listRowInsets(EdgeInsets())
+                                .padding(.vertical, 8)
                         }
+                        .onDelete { indexSet in
+                            for index in indexSet {
+                                viewModel.remove(viewModel.items[index])
+                            }
+                        }
+                        .onMove(perform: viewModel.move)
                     }
-                    .onMove(perform: viewModel.move)
                 }
                 .listStyle(.insetGrouped)
                 .toolbar { EditButton() }
-
-                HStack {
-                    Text("\(settings.localized("itinerary.total.minutes")) \(viewModel.totalMinutes())")
-                        .font(.headline)
-                    Spacer()
-                    ShareLink(item: viewModel.shareText) {
-                        Label(settings.localized("itinerary.share"), systemImage: "square.and.arrow.up")
-                    }
-                }
-                Button(role: .destructive) {
-                    viewModel.clear()
-                } label: {
-                    Text(settings.localized("account.clear.data"))
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.bordered)
             }
         }
         .padding()
         .navigationTitle(settings.localized("itinerary.title"))
-        .task {
-            await viewModel.load()
-        }
-        .refreshable {
-            await viewModel.load()
-        }
+        .task { await viewModel.load() }
+        .refreshable { await viewModel.load() }
         .overlay {
             if viewModel.isLoading {
                 LoadingOverlay(text: settings.localized("shared.loading"))
@@ -160,5 +123,41 @@ struct ItineraryView: View {
                 .padding()
             }
         }
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(String(format: settings.localized("itinerary.total"), viewModel.totalMinutes(), settings.localized("shared.minutes.unit")))
+                .font(.headline)
+            ShareLink(item: viewModel.shareText(using: locale, minutesLabel: settings.localized("shared.minutes.unit"))) {
+                Label(settings.localized("itinerary.share"), systemImage: "square.and.arrow.up")
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .textCase(nil)
+    }
+}
+
+private struct ItineraryRow: View {
+    let item: ItineraryDisplayItem
+    @EnvironmentObject private var settings: AppSettings
+    @Environment(\.locale) private var locale
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(item.poi.localizedName(locale: locale))
+                .font(.headline)
+            Text(item.poi.area)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Text("\(item.poi.minutes) \(settings.localized("shared.minutes.unit"))")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(RoundedRectangle(cornerRadius: 16).fill(Color(.secondarySystemBackground)))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(item.poi.localizedName(locale: locale)), \(item.poi.minutes) \(settings.localized("shared.minutes.unit"))")
     }
 }

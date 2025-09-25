@@ -7,10 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0B401BE29AC547BE97B2BBC9 /* transport.json in Resources */ = {isa = PBXBuildFile; fileRef = DF962B16DC574B18864520BB /* transport.json */; };
+		0B401BE29AC547BE97B2BBC9 /* fares_config.json in Resources */ = {isa = PBXBuildFile; fileRef = DF962B16DC574B18864520BB /* fares_config.json */; };
 		0F94DB5B0FFD414B94AD397F /* SharedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9BE5809471D4ACAA1CA31AB /* SharedComponents.swift */; };
 		1929634F6BC0470596547198 /* PaymentsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E07DDF5C5684C05B2C6180F /* PaymentsFeature.swift */; };
-		1B6300A431CB49C9B9C9AE33 /* esim_plans.json in Resources */ = {isa = PBXBuildFile; fileRef = 91072CA6FE4546D1B11A026E /* esim_plans.json */; };
+		1B6300A431CB49C9B9C9AE33 /* stations.json in Resources */ = {isa = PBXBuildFile; fileRef = 91072CA6FE4546D1B11A026E /* stations.json */; };
 		2440393F08554AB9A76B5F8E /* PoiService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36EF10CCC0CE4398B9EB7064 /* PoiService.swift */; };
 		45D007163FE0497FAB2C8BA7 /* DiscoverFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = C726873733654A5AAAF6C20D /* DiscoverFeature.swift */; };
 		4B108C3A7DAF479093E851E7 /* JourneyTHApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1FAABA271344FB88FE4C578 /* JourneyTHApp.swift */; };
@@ -35,6 +35,7 @@
 		6408A3AF5B424F7B8302A613 /* PoiViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFF06062C05041329C88A5C5 /* PoiViewModelTests.swift */; };
 		3ABCFA3A7D0D4E4EAE286677 /* ItineraryRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F66E467385C24E37AC1397AF /* ItineraryRepositoryTests.swift */; };
 		05833FE86B234D20AAE4651C /* OrderServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52A4D820998E4546898C8695 /* OrderServiceTests.swift */; };
+		5F0D21A3E1F8402AA5F34012 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = B1E1F2C4A28F47FF9CB7AA61 /* OrderedCollections */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -67,9 +68,9 @@
 		16245B883427418D8E6EB5E7 /* OrderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrderService.swift; sourceTree = "<group>"; };
 		9A986428DD23477AAC6355BD /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		FC46CE28CE744A56B56D012F /* PlanLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanLoader.swift; sourceTree = "<group>"; };
-		DF962B16DC574B18864520BB /* transport.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = transport.json; sourceTree = "<group>"; };
+		DF962B16DC574B18864520BB /* fares_config.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = fares_config.json; sourceTree = "<group>"; };
 		91C05ECBF1644A69BB0977C6 /* pois.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = pois.json; sourceTree = "<group>"; };
-		91072CA6FE4546D1B11A026E /* esim_plans.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = esim_plans.json; sourceTree = "<group>"; };
+		91072CA6FE4546D1B11A026E /* stations.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = stations.json; sourceTree = "<group>"; };
 		9BDE6A65E50B42DAA7F0FCAC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		6ADEDD1F99744762AAA2BC49 /* JourneyTH.xcdatamodeld */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodeld; path = JourneyTH.xcdatamodeld; sourceTree = "<group>"; };
 		AD9639B5FA9442EF8C93471C /* TransportViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransportViewModelTests.swift; sourceTree = "<group>"; };
@@ -87,6 +88,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5F0D21A3E1F8402AA5F34012 /* OrderedCollections in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -243,9 +245,9 @@
 		AA1467DA18A6437DB8006AD1 = {
 			isa = PBXGroup;
 			children = (
-				DF962B16DC574B18864520BB /* transport.json */,
+				DF962B16DC574B18864520BB /* fares_config.json */,
 				91C05ECBF1644A69BB0977C6 /* pois.json */,
-				91072CA6FE4546D1B11A026E /* esim_plans.json */,
+				91072CA6FE4546D1B11A026E /* stations.json */,
 			);
 			name = Data;
 			path = Data;
@@ -312,6 +314,9 @@
 			);
 			dependencies = (
 			);
+			packageProductDependencies = (
+				B1E1F2C4A28F47FF9CB7AA61 /* OrderedCollections */,
+			);
 			name = JourneyTH;
 			productName = JourneyTH;
 			productReference = EDEFAF81E471449BA01CDB83 /* JourneyTH.app */;
@@ -358,6 +363,9 @@
 				Base,
 				th,
 			);
+			packageReferences = (
+				D5A7F3B9E41F4E5F9A2B1C7D /* XCRemoteSwiftPackageReference "swift-collections" */,
+			);
 			mainGroup = C82283E8BE864528A747D2F7;
 			productRefGroup = 462D4819A0CB4833AE150112;
 			projectDirPath = "";
@@ -374,8 +382,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0B401BE29AC547BE97B2BBC9 /* transport.json in Resources */,
-				1B6300A431CB49C9B9C9AE33 /* esim_plans.json in Resources */,
+				0B401BE29AC547BE97B2BBC9 /* fares_config.json in Resources */,
+				1B6300A431CB49C9B9C9AE33 /* stations.json in Resources */,
 				9DF485B541FB495BA3AB03F3 /* pois.json in Resources */,
 				5801E565694C43B4AEBD4E24 /* Assets.xcassets in Resources */,
 				FF192049B2AC4E7BB21949AF /* JourneyTH.xcdatamodeld in Resources */,
@@ -450,6 +458,25 @@
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B1E1F2C4A28F47FF9CB7AA61 /* OrderedCollections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D5A7F3B9E41F4E5F9A2B1C7D /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = OrderedCollections;
+		};
+/* End XCSwiftPackageProductDependency section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D5A7F3B9E41F4E5F9A2B1C7D /* XCRemoteSwiftPackageReference "swift-collections" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-collections";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCBuildConfiguration section */
 		745C0DB40D0B43FC9FEE81AF /* Debug */ = {

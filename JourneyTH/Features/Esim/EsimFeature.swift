@@ -1,29 +1,32 @@
 import SwiftUI
-import CoreImage.CIFilterBuiltins
+import MapKit
 
 @MainActor
-final class EsimViewModel: ObservableObject {
-    @Published private(set) var plans: [EsimPlan] = []
-    @Published private(set) var latestOrder: OrderModel?
-    @Published var isLoading = false
+final class RailViewModel: ObservableObject {
+    @Published private(set) var stations: [RailStation] = []
+    @Published private(set) var lines: [RailLine] = []
+    @Published var fromStationId: String?
+    @Published var toStationId: String?
+    @Published private(set) var estimate: RailFareEstimate?
+    @Published private(set) var isLoading = false
+    @Published private(set) var isCalculating = false
     @Published var errorMessage: String?
 
-    private let planLoader: PlanLoading
-    private let orderService: OrderServicing
-    private let paymentProvider: PaymentProviding
-    private let context = CIContext()
+    private let railService: RailFareServicing
 
-    init(planLoader: PlanLoading, orderService: OrderServicing, paymentProvider: PaymentProviding) {
-        self.planLoader = planLoader
-        self.orderService = orderService
-        self.paymentProvider = paymentProvider
+    init(railService: RailFareServicing) {
+        self.railService = railService
     }
 
     func load() async {
         isLoading = true
         errorMessage = nil
         do {
-            plans = try await planLoader.fetchPlans()
+            let loadedStations = try await railService.stations()
+            stations = loadedStations
+            lines = try await railService.lines()
+            fromStationId = loadedStations.first?.id
+            toStationId = loadedStations.dropFirst().first?.id ?? loadedStations.first?.id
             isLoading = false
         } catch {
             errorMessage = error.localizedDescription
@@ -31,86 +34,96 @@ final class EsimViewModel: ObservableObject {
         }
     }
 
-    func refreshOrders(for plan: EsimPlan?) {
-        do {
-            if let plan {
-                latestOrder = try orderService.latestOrder(for: plan)
-            } else {
-                latestOrder = try orderService.fetchOrders().first
-            }
-        } catch {
-            errorMessage = error.localizedDescription
+    func estimateFare() async {
+        guard let fromStation = selectedStation(id: fromStationId),
+              let toStation = selectedStation(id: toStationId),
+              fromStation.id != toStation.id else {
+            errorMessage = NSLocalizedString("rail.invalid.selection", comment: "")
+            return
         }
-    }
-
-    func createOrder(for plan: EsimPlan) async {
-        isLoading = true
+        isCalculating = true
         errorMessage = nil
         do {
-            let order = try await orderService.createOrder(for: plan, provider: paymentProvider)
-            latestOrder = order
-            isLoading = false
+            estimate = try await railService.estimate(from: fromStation, to: toStation)
+            isCalculating = false
         } catch {
             errorMessage = error.localizedDescription
-            isLoading = false
+            isCalculating = false
         }
     }
 
-    func markActivated() async {
-        guard let order = latestOrder else { return }
-        do {
-            let status = await paymentProvider.markPaid(order: order)
-            latestOrder = try orderService.markOrder(order.id, as: status)
-        } catch {
-            errorMessage = error.localizedDescription
-        }
+    func selectedStation(id: String?) -> RailStation? {
+        guard let id else { return nil }
+        return stations.first { $0.id == id }
     }
 
-    func qrImage() -> UIImage? {
-        guard let order = latestOrder else { return nil }
-        let filter = CIFilter.qrCodeGenerator()
-        let payload = "plan=\(order.planId)&order=\(order.id.uuidString)"
-        filter.setValue(Data(payload.utf8), forKey: "inputMessage")
-        guard let output = filter.outputImage else { return nil }
-        let scaled = output.transformed(by: CGAffineTransform(scaleX: 8, y: 8))
-        if let cgImage = context.createCGImage(scaled, from: scaled.extent) {
-            return UIImage(cgImage: cgImage)
+    func highlightedLines() -> [RailLine] {
+        guard let from = selectedStation(id: fromStationId) else { return lines }
+        return lines.filter { $0.system == from.system }
+    }
+
+    func region() -> MKCoordinateRegion {
+        if let from = selectedStation(id: fromStationId), let to = selectedStation(id: toStationId) {
+            let minLat = min(from.lat, to.lat)
+            let maxLat = max(from.lat, to.lat)
+            let minLng = min(from.lng, to.lng)
+            let maxLng = max(from.lng, to.lng)
+            let center = CLLocationCoordinate2D(latitude: (minLat + maxLat) / 2, longitude: (minLng + maxLng) / 2)
+            let span = MKCoordinateSpan(latitudeDelta: max(0.1, maxLat - minLat + 0.15), longitudeDelta: max(0.1, maxLng - minLng + 0.15))
+            return MKCoordinateRegion(center: center, span: span)
         }
-        return nil
+        return MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 13.7563, longitude: 100.5018), span: MKCoordinateSpan(latitudeDelta: 1, longitudeDelta: 1))
     }
 }
 
-struct EsimView: View {
-    @ObservedObject var viewModel: EsimViewModel
+struct RailView: View {
+    @ObservedObject var viewModel: RailViewModel
     @EnvironmentObject private var settings: AppSettings
+    @Environment(\.locale) private var locale
+    @State private var mapPosition: MapCameraPosition
+
+    init(viewModel: RailViewModel) {
+        self.viewModel = viewModel
+        _mapPosition = State(initialValue: .region(viewModel.region()))
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            if viewModel.plans.isEmpty {
-                EmptyStateView(
-                    title: settings.localized("esim.title"),
-                    subtitle: settings.localized("esim.empty.subtitle"),
-                    imageSystemName: "simcard.fill",
-                    actionTitle: nil,
-                    action: nil
-                )
-            } else {
-                List(viewModel.plans) { plan in
-                    NavigationLink(destination: EsimPlanDetailView(plan: plan, viewModel: viewModel)) {
-                        EsimPlanRow(plan: plan)
-                    }
-                    .listRowBackground(Color.clear)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                railMap
+                    .frame(height: 260)
+                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+
+                pickerSection
+
+                Button {
+                    Task { await viewModel.estimateFare() }
+                } label: {
+                    Label(settings.localized("rail.calculate"), systemImage: "tram.fill")
+                        .frame(maxWidth: .infinity)
                 }
-                .listStyle(.plain)
+                .buttonStyle(PrimaryButtonStyle())
+                .disabled(viewModel.isCalculating)
+
+                if let estimate = viewModel.estimate,
+                   let from = viewModel.selectedStation(id: viewModel.fromStationId),
+                   let to = viewModel.selectedStation(id: viewModel.toStationId) {
+                    summarySection(estimate: estimate, from: from, to: to)
+                } else {
+                    Text(settings.localized("rail.tip"))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
+                Text(settings.localized("rail.disclaimer"))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .padding(.top)
             }
+            .padding()
         }
-        .padding()
-        .navigationTitle(settings.localized("esim.title"))
-        .task {
-            if viewModel.plans.isEmpty {
-                await viewModel.load()
-            }
-        }
+        .navigationTitle(settings.localized("rail.title"))
+        .task { await viewModel.load() }
         .overlay(alignment: .top) {
             if let error = viewModel.errorMessage {
                 ErrorBanner(
@@ -122,81 +135,112 @@ struct EsimView: View {
             }
         }
         .overlay {
-            if viewModel.isLoading {
+            if viewModel.isLoading || viewModel.isCalculating {
                 LoadingOverlay(text: settings.localized("shared.loading"))
             }
         }
     }
-}
 
-struct EsimPlanRow: View {
-    let plan: EsimPlan
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(plan.name)
-                    .font(.headline)
-                Spacer()
-                Text("฿\(plan.priceTHB)")
-                    .font(.headline)
+    private var railMap: some View {
+        Map(position: $mapPosition) {
+            ForEach(viewModel.highlightedLines()) { line in
+                MapPolyline(line.polyline)
+                    .stroke(color(for: line.system), style: StrokeStyle(lineWidth: 5, lineCap: .round, lineJoin: .round))
             }
-            Text(plan.network)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            Text("\(plan.validityDays) days • \(plan.speed)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .padding(.vertical, 8)
-    }
-}
-
-struct EsimPlanDetailView: View {
-    let plan: EsimPlan
-    @ObservedObject var viewModel: EsimViewModel
-    @EnvironmentObject private var settings: AppSettings
-
-    var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(plan.name)
-                        .font(.largeTitle.bold())
-                    Text(plan.network)
-                        .font(.title3)
-                        .foregroundStyle(.secondary)
-                    Text(settings.localized("esim.plan.price") + ": ฿\(plan.priceTHB)")
-                        .font(.headline)
-                    Text("\(settings.localized("esim.plan.validity")) \(plan.validityDays) \(settings.localized("shared.days"))")
-                        .font(.headline)
-                    Text(settings.localized("esim.plan.speed"))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Text(plan.speed)
-                        .font(.body)
-                }
-                .padding()
-                .background(RoundedRectangle(cornerRadius: 16).fill(Color(.secondarySystemBackground)))
-
-                if let order = viewModel.latestOrder {
-                    OrderStatusView(order: order, qrImage: viewModel.qrImage(), onMarkActivated: {
-                        Task { await viewModel.markActivated() }
-                    })
-                } else {
-                    Button(settings.localized("esim.plan.purchase")) {
-                        Task { await viewModel.createOrder(for: plan) }
-                        Haptics.shared.play(.success)
+            ForEach(viewModel.stations) { station in
+                Annotation(station.localizedName(locale: locale), coordinate: station.coordinate) {
+                    VStack(spacing: 4) {
+                        Circle()
+                            .fill(color(for: station.system))
+                            .frame(width: 12, height: 12)
+                        Text(station.localizedName(locale: locale))
+                            .font(.caption2)
+                            .padding(4)
+                            .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
                     }
-                    .buttonStyle(PrimaryButtonStyle())
                 }
             }
-            .padding()
         }
-        .navigationTitle(plan.name)
-        .navigationBarTitleDisplayMode(.inline)
-        .task {
-            viewModel.refreshOrders(for: plan)
+        .mapStyle(.standard)
+        .accessibilityLabel(settings.localized("rail.map"))
+        .onChange(of: viewModel.fromStationId) { _ in
+            mapPosition = .region(viewModel.region())
         }
+        .onChange(of: viewModel.toStationId) { _ in
+            mapPosition = .region(viewModel.region())
+        }
+    }
+
+    private var pickerSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            stationPicker(title: settings.localized("rail.from"), selection: $viewModel.fromStationId)
+            stationPicker(title: settings.localized("rail.to"), selection: $viewModel.toStationId)
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 18).fill(Color(.secondarySystemBackground)))
+    }
+
+    private func stationPicker(title: String, selection: Binding<String?>) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.headline)
+            Picker(title, selection: selection) {
+                ForEach(viewModel.stations, id: \.id) { station in
+                    Text(station.localizedName(locale: locale)).tag(Optional(station.id))
+                }
+            }
+            .pickerStyle(.navigationLink)
+        }
+    }
+
+    private func summarySection(estimate: RailFareEstimate, from: RailStation, to: RailStation) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(String(format: settings.localized("rail.summary"), from.localizedName(locale: locale), to.localizedName(locale: locale), estimate.distanceKm))
+                .font(.title3.bold())
+            if estimate.isUrban {
+                Text(settings.localized("rail.urban." + estimate.system.lowercased()))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text(settings.localized("rail.intercity"))
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            Text(currency(estimate.price))
+                .font(.system(size: 34, weight: .bold))
+            Button(settings.localized("rail.open.maps")) {
+                openInMaps(from: from, to: to)
+            }
+            .buttonStyle(.bordered)
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 18).fill(Color(.systemBackground)))
+        .shadow(radius: 3)
+    }
+
+    private func color(for system: String) -> Color {
+        switch system {
+        case "BTS": return .green
+        case "MRT": return .blue
+        case "ARL": return .orange
+        case "SRT": return .red
+        default: return .gray
+        }
+    }
+
+    private func currency(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.currencyCode = "THB"
+        formatter.maximumFractionDigits = 0
+        return formatter.string(from: NSNumber(value: value.rounded())) ?? "฿\(Int(value.rounded()))"
+    }
+
+    private func openInMaps(from: RailStation, to: RailStation) {
+        let origin = MKMapItem(placemark: MKPlacemark(coordinate: from.coordinate, addressDictionary: nil))
+        origin.name = from.localizedName(locale: locale)
+        let destination = MKMapItem(placemark: MKPlacemark(coordinate: to.coordinate, addressDictionary: nil))
+        destination.name = to.localizedName(locale: locale)
+        MKMapItem.openMaps(with: [origin, destination], launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeTransit])
     }
 }

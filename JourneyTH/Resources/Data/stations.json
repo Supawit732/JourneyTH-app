@@ -1,0 +1,173 @@
+{
+  "stations": [
+    {
+      "id": "bts_mo_chit",
+      "nameTH": "หมอชิต",
+      "nameEN": "Mo Chit",
+      "system": "BTS",
+      "lat": 13.802108,
+      "lng": 100.553131,
+      "line": "BTS Sukhumvit"
+    },
+    {
+      "id": "bts_siam",
+      "nameTH": "สยาม",
+      "nameEN": "Siam",
+      "system": "BTS",
+      "lat": 13.745731,
+      "lng": 100.533143,
+      "line": "BTS Sukhumvit"
+    },
+    {
+      "id": "bts_asok",
+      "nameTH": "อโศก",
+      "nameEN": "Asok",
+      "system": "BTS",
+      "lat": 13.736717,
+      "lng": 100.560321,
+      "line": "BTS Sukhumvit"
+    },
+    {
+      "id": "bts_phrom_phong",
+      "nameTH": "พร้อมพงษ์",
+      "nameEN": "Phrom Phong",
+      "system": "BTS",
+      "lat": 13.730556,
+      "lng": 100.569444,
+      "line": "BTS Sukhumvit"
+    },
+    {
+      "id": "mrt_chatuchak",
+      "nameTH": "สวนจตุจักร",
+      "nameEN": "Chatuchak Park",
+      "system": "MRT",
+      "lat": 13.8032,
+      "lng": 100.5534,
+      "line": "MRT Blue"
+    },
+    {
+      "id": "mrt_sukhumvit",
+      "nameTH": "สุขุมวิท",
+      "nameEN": "Sukhumvit",
+      "system": "MRT",
+      "lat": 13.736024,
+      "lng": 100.561101,
+      "line": "MRT Blue"
+    },
+    {
+      "id": "mrt_queen",
+      "nameTH": "ศูนย์การประชุมแห่งชาติสิริกิติ์",
+      "nameEN": "Queen Sirikit National Convention Centre",
+      "system": "MRT",
+      "lat": 13.722685,
+      "lng": 100.559468,
+      "line": "MRT Blue"
+    },
+    {
+      "id": "arl_phaya_thai",
+      "nameTH": "พญาไท",
+      "nameEN": "Phaya Thai",
+      "system": "ARL",
+      "lat": 13.7563,
+      "lng": 100.5317,
+      "line": "ARL City"
+    },
+    {
+      "id": "arl_makkasan",
+      "nameTH": "มักกะสัน",
+      "nameEN": "Makkasan",
+      "system": "ARL",
+      "lat": 13.7473,
+      "lng": 100.5613,
+      "line": "ARL City"
+    },
+    {
+      "id": "arl_suvarnabhumi",
+      "nameTH": "สุวรรณภูมิ",
+      "nameEN": "Suvarnabhumi",
+      "system": "ARL",
+      "lat": 13.6933,
+      "lng": 100.7521,
+      "line": "ARL City"
+    },
+    {
+      "id": "srt_hua_lamphong",
+      "nameTH": "หัวลำโพง",
+      "nameEN": "Hua Lamphong",
+      "system": "SRT",
+      "lat": 13.7374,
+      "lng": 100.5163,
+      "line": "Northern Line"
+    },
+    {
+      "id": "srt_ayutthaya",
+      "nameTH": "อยุธยา",
+      "nameEN": "Ayutthaya",
+      "system": "SRT",
+      "lat": 14.3556,
+      "lng": 100.5779,
+      "line": "Northern Line"
+    },
+    {
+      "id": "srt_lopburi",
+      "nameTH": "ลพบุรี",
+      "nameEN": "Lopburi",
+      "system": "SRT",
+      "lat": 14.7995,
+      "lng": 100.6534,
+      "line": "Northern Line"
+    }
+  ],
+  "lines": [
+    {
+      "id": "bts_sukhumvit",
+      "name": "BTS Sukhumvit",
+      "system": "BTS",
+      "stationIds": ["bts_mo_chit", "bts_siam", "bts_asok", "bts_phrom_phong"],
+      "coordinates": [
+        [13.802108, 100.553131],
+        [13.7795, 100.5450],
+        [13.745731, 100.533143],
+        [13.736717, 100.560321],
+        [13.730556, 100.569444]
+      ]
+    },
+    {
+      "id": "mrt_blue",
+      "name": "MRT Blue",
+      "system": "MRT",
+      "stationIds": ["mrt_chatuchak", "mrt_sukhumvit", "mrt_queen"],
+      "coordinates": [
+        [13.8032, 100.5534],
+        [13.7640, 100.5490],
+        [13.736024, 100.561101],
+        [13.722685, 100.559468]
+      ]
+    },
+    {
+      "id": "arl_city",
+      "name": "Airport Rail Link",
+      "system": "ARL",
+      "stationIds": ["arl_phaya_thai", "arl_makkasan", "arl_suvarnabhumi"],
+      "coordinates": [
+        [13.7563, 100.5317],
+        [13.7473, 100.5613],
+        [13.7390, 100.6000],
+        [13.72, 100.68],
+        [13.6933, 100.7521]
+      ]
+    },
+    {
+      "id": "srt_northern",
+      "name": "SRT Northern",
+      "system": "SRT",
+      "stationIds": ["srt_hua_lamphong", "srt_ayutthaya", "srt_lopburi"],
+      "coordinates": [
+        [13.7374, 100.5163],
+        [14.1160, 100.5850],
+        [14.3556, 100.5779],
+        [14.7995, 100.6534]
+      ]
+    }
+  ]
+}

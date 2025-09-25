@@ -3,10 +3,10 @@ import XCTest
 
 final class PoiViewModelTests: XCTestCase {
     @MainActor
-    private func makeViewModel() -> (PoiViewModel, ItineraryRepository) {
+    private func makeViewModel() -> (DiscoverViewModel, ItineraryRepository) {
         let persistence = PersistenceController(inMemory: true)
         let repository = ItineraryRepository(context: persistence.container.viewContext)
-        let viewModel = PoiViewModel(service: MockPoiService(loader: LocalDataLoader()), itineraryRepository: repository)
+        let viewModel = DiscoverViewModel(service: MockPoiService(loader: LocalDataLoader()), itineraryRepository: repository)
         return (viewModel, repository)
     }
 
@@ -19,6 +19,19 @@ final class PoiViewModelTests: XCTestCase {
     }
 
     @MainActor
+    func testFilterByArea() async throws {
+        let (viewModel, _) = makeViewModel()
+        await viewModel.load()
+        guard let firstArea = viewModel.availableAreas.first else {
+            XCTFail("Missing area")
+            return
+        }
+        viewModel.selectedArea = firstArea
+        viewModel.applyFilters()
+        XCTAssertTrue(viewModel.filteredPois.allSatisfy { $0.area == firstArea })
+    }
+
+    @MainActor
     func testAddToItineraryPersistsItem() async throws {
         let (viewModel, repository) = makeViewModel()
         await viewModel.load()
@@ -26,7 +39,7 @@ final class PoiViewModelTests: XCTestCase {
             XCTFail("Missing poi")
             return
         }
-        viewModel.addToItinerary(poi: poi)
+        viewModel.addToItinerary(poi)
         let items = try repository.items()
         XCTAssertEqual(items.count, 1)
     }

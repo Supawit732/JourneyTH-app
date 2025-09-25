@@ -1,6 +1,5 @@
 import SwiftUI
 import CoreData
-import MapKit
 
 @main
 struct JourneyTHApp: App {
@@ -21,64 +20,53 @@ struct JourneyTHApp: App {
 struct MainTabView: View {
     @EnvironmentObject private var settings: AppSettings
     @EnvironmentObject private var container: ServiceContainer
-    @State private var showAccount = false
+    @State private var showSettings = false
 
     var body: some View {
         TabView {
             NavigationStack {
-                TransportView(viewModel: TransportViewModel(service: container.transportService))
-                    .toolbar {
-                        accountButton
-                    }
+                DiscoverView(viewModel: DiscoverViewModel(service: container.poiService, itineraryRepository: container.itineraryRepository))
+                    .toolbar { settingsButton }
             }
-            .tabItem {
-                Label(settings.localized("transport.title"), systemImage: "tram.fill")
-            }
-
-            NavigationStack {
-                DiscoverView(viewModel: PoiViewModel(service: container.poiService, itineraryRepository: container.itineraryRepository))
-                    .toolbar {
-                        accountButton
-                    }
-            }
-            .tabItem {
-                Label(settings.localized("discover.title"), systemImage: "map")
-            }
+            .tabItem { Label(settings.localized("discover.title"), systemImage: "sparkles") }
 
             NavigationStack {
                 ItineraryView(viewModel: ItineraryViewModel(repository: container.itineraryRepository, poiService: container.poiService))
-                    .toolbar {
-                        accountButton
-                    }
+                    .toolbar { settingsButton }
             }
-            .tabItem {
-                Label(settings.localized("itinerary.title"), systemImage: "list.bullet.rectangle")
-            }
+            .tabItem { Label(settings.localized("itinerary.title"), systemImage: "list.bullet.rectangle") }
 
             NavigationStack {
-                EsimView(viewModel: EsimViewModel(planLoader: container.planLoader, orderService: container.orderService, paymentProvider: container.paymentProvider))
-                    .toolbar {
-                        accountButton
-                    }
+                TransportView(viewModel: FareEstimatorViewModel(poiService: container.poiService, fareService: container.fareService))
+                    .toolbar { settingsButton }
             }
-            .tabItem {
-                Label(settings.localized("esim.title"), systemImage: "simcard")
-            }
-        }
-        .sheet(isPresented: $showAccount) {
+            .tabItem { Label(settings.localized("transport.title"), systemImage: "car.fill") }
+
             NavigationStack {
-                AccountView(viewModel: SettingsViewModel(settings: settings, orderService: container.orderService, itineraryRepository: container.itineraryRepository))
+                RailView(viewModel: RailViewModel(railService: container.railFareService))
+                    .toolbar { settingsButton }
             }
+            .tabItem { Label(settings.localized("rail.title"), systemImage: "tram.fill") }
+
+            NavigationStack {
+                AboutView()
+                    .toolbar { settingsButton }
+            }
+            .tabItem { Label(settings.localized("about.title"), systemImage: "info.circle") }
+        }
+        .sheet(isPresented: $showSettings) {
+            AccountView(viewModel: SettingsViewModel(settings: settings, itineraryRepository: container.itineraryRepository))
+                .environmentObject(settings)
         }
     }
 
-    private var accountButton: some ToolbarContent {
+    private var settingsButton: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
-                showAccount.toggle()
+                showSettings.toggle()
                 Haptics.shared.play(.success)
             } label: {
-                Image(systemName: "person.crop.circle")
+                Image(systemName: "gearshape")
                     .accessibilityLabel(settings.localized("account.title"))
             }
         }
